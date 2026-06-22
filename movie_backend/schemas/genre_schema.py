@@ -13,7 +13,6 @@ class GenreUpdate(BaseModel):
 class GenreResponse(BaseModel):
     id: int
     name: str
-    created_at: datetime
 
     class Config:
         from_attributes = True

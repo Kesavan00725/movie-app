@@ -9,42 +9,68 @@ from movie_backend.services.movies_service import (
     filter_movies_service
 )
 
-router = APIRouter(prefix="/movies", tags=["Movies"])
+from movie_backend.schemas.movie_schema import MovieResponse
+from typing import List
+
+router = APIRouter(
+    prefix="/movies",
+    tags=["Movies"]
+)
 
 
-@router.get("/")
+@router.get("/",response_model=List[MovieResponse])
 async def get_movies(
+    page: int = 1,
+    limit: int = 10,
     db: AsyncSession = Depends(get_db)
 ):
-    return await get_movies_service(db)
+    return await get_movies_service(
+        page,
+        limit,
+        db
+    )
 
 
-@router.get("/{movie_id}")
+@router.get("/{movie_id}",response_model=MovieResponse)
 async def get_movie(
     movie_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    return await get_movie_service(movie_id, db)
+    return await get_movie_service(
+        movie_id,
+        db
+    )
 
 
-@router.get("/search/")
+@router.get("/search/",response_model=List[MovieResponse])
 async def search_movies(
     q: str,
+    page: int = 1,
+    limit: int = 10,
     db: AsyncSession = Depends(get_db)
 ):
-    return await search_movies_service(q, db)
+    return await search_movies_service(
+        q,
+        page,
+        limit,
+        db
+    )
 
 
-@router.get("/filter/")
+@router.get("/filter/",response_model=List[MovieResponse])
 async def filter_movies(
     genre: str | None = None,
     language: str | None = None,
     year: int | None = None,
+    page: int = 1,
+    limit: int = 10,
     db: AsyncSession = Depends(get_db)
 ):
     return await filter_movies_service(
         genre,
         language,
         year,
+        page,
+        limit,
         db
     )
