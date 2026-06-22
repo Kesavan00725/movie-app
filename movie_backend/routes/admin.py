@@ -8,14 +8,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from movie_backend.database.database import get_db
 from movie_backend.util.helpers import verify_token
+
 from movie_backend.schemas.movie_schema import (
     MovieCreate,
-    MovieUpdate
+    MovieUpdate,
+    MovieResponse
 )
+
 from movie_backend.schemas.genre_schema import (
     GenreCreate,
-    GenreUpdate
+    GenreUpdate,
+    GenreResponse
 )
+
+from movie_backend.schemas.movie_image_schema import (
+    MovieImageResponse
+)
+
+from movie_backend.schemas.response_schema import (
+    MessageResponse
+)
+
 from movie_backend.services.admin_service import (
     create_movie_service,
     update_movie_service,
@@ -33,7 +46,10 @@ router = APIRouter(
 )
 
 
-@router.post("/movies")
+@router.post(
+    "/movies",
+    response_model=MovieResponse
+)
 async def create_movie(
     request: MovieCreate,
     db: AsyncSession = Depends(get_db),
@@ -46,7 +62,10 @@ async def create_movie(
     )
 
 
-@router.patch("/movies/{movie_id}")
+@router.patch(
+    "/movies/{movie_id}",
+    response_model=MovieResponse
+)
 async def update_movie(
     movie_id: int,
     request: MovieUpdate,
@@ -61,7 +80,10 @@ async def update_movie(
     )
 
 
-@router.delete("/movies/{movie_id}")
+@router.delete(
+    "/movies/{movie_id}",
+    response_model=MessageResponse
+)
 async def delete_movie(
     movie_id: int,
     db: AsyncSession = Depends(get_db),
@@ -74,7 +96,10 @@ async def delete_movie(
     )
 
 
-@router.post("/genres")
+@router.post(
+    "/genres",
+    response_model=GenreResponse
+)
 async def create_genre(
     request: GenreCreate,
     db: AsyncSession = Depends(get_db),
@@ -87,7 +112,10 @@ async def create_genre(
     )
 
 
-@router.patch("/genres/{genre_id}")
+@router.patch(
+    "/genres/{genre_id}",
+    response_model=GenreResponse
+)
 async def update_genre(
     genre_id: int,
     request: GenreUpdate,
@@ -102,7 +130,10 @@ async def update_genre(
     )
 
 
-@router.delete("/genres/{genre_id}")
+@router.delete(
+    "/genres/{genre_id}",
+    response_model=MessageResponse
+)
 async def delete_genre(
     genre_id: int,
     db: AsyncSession = Depends(get_db),
@@ -115,7 +146,10 @@ async def delete_genre(
     )
 
 
-@router.post("/movies/{movie_id}/images")
+@router.post(
+    "/movies/{movie_id}/images",
+    response_model=MovieImageResponse
+)
 async def add_movie_image(
     movie_id: int,
     image: UploadFile = File(...),
@@ -130,7 +164,10 @@ async def add_movie_image(
     )
 
 
-@router.delete("/movie-images/{image_id}")
+@router.delete(
+    "/movie-images/{image_id}",
+    response_model=MessageResponse
+)
 async def delete_movie_image(
     image_id: int,
     db: AsyncSession = Depends(get_db),
