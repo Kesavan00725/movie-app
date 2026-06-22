@@ -5,7 +5,7 @@ from movie_backend.database.database import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "users_details1"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False)
