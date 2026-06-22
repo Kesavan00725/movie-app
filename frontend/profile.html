@@ -10,11 +10,12 @@
   <link rel="stylesheet" href="css/profile.css">
 </head>
 <body>
+  <div class="cursor-example"></div>
 
   <!-- Navbar injected by includeHTML.js -->
   <div id="navbar-root" data-include="navbar"></div>
 
-  <main class="profile-page">
+  <main class="profile-page container">
 
     <!-- ─── Profile Header ─── -->
     <section class="profile-header">
@@ -69,8 +70,13 @@
 
   </main>
 
-  <script type="module" src="js/utils/includeHTML.js"></script>
-  <script type="module" src="js/user/profile.js"></script>
+  <!-- Load GSAP via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- Load custom global cursor script -->
+  <script src="JS/utils/cursor.js"></script>
+  <script src="JS/utils/includeHTML.js"></script>
+  <!-- Load profile script -->
+  <script type="module" src="JS/auth/user/profile.js"></script>
 
 </body>
 </html>
