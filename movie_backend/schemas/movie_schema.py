@@ -1,7 +1,6 @@
 # schemas/movie_schema.py
 
 from pydantic import BaseModel
-from datetime import datetime
 from .genre_schema import GenreResponse
 from .movie_image_schema import MovieImageResponse
 
@@ -40,8 +39,6 @@ class MovieResponse(BaseModel):
     rating: float
     poster_url: str
     trailer_url: str
-    created_at: datetime
-    updated_at: datetime
     genre: GenreResponse
     images: list[MovieImageResponse]
 

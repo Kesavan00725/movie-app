@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import (
 
 from sqlalchemy.orm import declarative_base
 
+
 load_dotenv()
 
 host = os.getenv("DB_HOST")

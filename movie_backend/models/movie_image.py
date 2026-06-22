@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+
 
 from movie_backend.database.database import Base
 
@@ -17,7 +17,6 @@ class MovieImage(Base):
         ForeignKey("movies.id")
     )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
 
     movie = relationship(
         "Movie",

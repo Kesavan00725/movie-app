@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+
 
 from movie_backend.database.database import Base
 
@@ -23,8 +23,6 @@ class Movie(Base):
 
     genre_id = Column(Integer, ForeignKey("genres.id"))
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
 
     genre = relationship(
         "Genre",

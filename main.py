@@ -12,6 +12,10 @@ from movie_backend.routes.movies import router as movies
 from movie_backend.routes.genres import router as genres
 from movie_backend.routes.admin import router as admin
 
+from movie_backend.models.user import User
+from movie_backend.models.genre import Genre
+from movie_backend.models.movie import Movie
+from movie_backend.models.movie_image import MovieImage
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
