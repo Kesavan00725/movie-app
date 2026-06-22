@@ -11,6 +11,8 @@ from movie_backend.routes.auth import router as auth
 from movie_backend.routes.movies import router as movies
 from movie_backend.routes.genres import router as genres
 from movie_backend.routes.admin import router as admin
+from movie_backend.routes.favorite import router as favorite
+from movie_backend.routes.review import router as review
 
 from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
@@ -80,3 +82,5 @@ app.include_router(auth)
 app.include_router(movies)
 app.include_router(genres)
 app.include_router(admin)
+app.include_router(favorite)
+app.include_router(review)
