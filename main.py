@@ -40,7 +40,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://movie-app-frontend-2o9t.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
