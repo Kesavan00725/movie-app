@@ -1,382 +1,421 @@
 /* ============================================================
-   CINEVERSE — MOVIE PAGE CONTROLLER  (FIXED VERSION)
-   Fixes:
-   - Nav active link updates on click
-   - Genre / Year / Rating filters actually work
-   - Autocomplete: type "op" → lists movies starting with "op"
-   - Removed sticky search logic
-   - MGC card classes match the CSS
-   - Pagination uses .pag-btn (matches CSS)
+   CINEVERSE - MOVIE PAGE CONTROLLER
+   FastAPI data version, original UI classes preserved.
    ============================================================ */
 
-/* -- IMAGES -- */
-const MOVIE_IMAGES = {};
-function getPoster(movie_id, poster_path) {
-  if (MOVIE_IMAGES[movie_id]) return MOVIE_IMAGES[movie_id];
-  if (poster_path) return 'https://image.tmdb.org/t/p/w342' + poster_path;
-  return 'assets/images/placeholder.jpg';
-}
-function getBackdrop(movie_id, backdrop_path) {
-  if (MOVIE_IMAGES[movie_id]) return MOVIE_IMAGES[movie_id];
-  if (backdrop_path) return 'https://image.tmdb.org/t/p/w780' + backdrop_path;
-  return 'assets/images/placeholder.jpg';
-}
+const API_BASE =
+  window.CINEVERSE_API_BASE ||
+  localStorage.getItem('cineverse_api_base') ||
+  'https://movie-app-qhzc.onrender.com';
 
-/* -- STATE -- */
-const state = {
-  allMovies : [],
-  filtered  : [],
-  genre     : 'all',
-  year      : 'all',
-  rating    : 'all',
-  sort      : 'popularity',
-  query     : '',
-  page      : 1,
-  perPage   : 20,
-  view      : 'grid',
-};
+const API_LIMIT = 200;
+const PLACEHOLDER_IMAGE = 'assets/images/placeholder.jpg';
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w342';
 
-/* -- GENRE MAP -- */
 const GENRE_MAP = {
-  28:'Action', 12:'Adventure', 16:'Animation', 35:'Comedy', 80:'Crime',
-  99:'Documentary', 18:'Drama', 10751:'Family', 14:'Fantasy', 36:'History',
-  27:'Horror', 10402:'Music', 9648:'Mystery', 10749:'Romance', 878:'Sci-Fi',
-  10770:'TV Movie', 53:'Thriller', 10752:'War', 37:'Western'
+  28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
+  99: 'Documentary', 18: 'Drama', 10751: 'Family', 14: 'Fantasy', 36: 'History',
+  27: 'Horror', 10402: 'Music', 9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
+  10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western'
 };
-function genreName(ids=[]) { return (ids||[]).slice(0,1).map(id => GENRE_MAP[id]||'').join(''); }
-function genreNames(ids=[]) { return (ids||[]).slice(0,3).map(id => GENRE_MAP[id]||'Film'); }
 
-/* ============================================================
-   BOOT
-============================================================ */
-(async function boot() {
-  /* Fix nav active state immediately */
+const state = {
+  allMovies: [],
+  filtered: [],
+  genre: 'all',
+  year: 'all',
+  rating: 'all',
+  sort: 'popularity',
+  query: '',
+  page: 1,
+  perPage: 20,
+  view: 'grid',
+};
+
+document.addEventListener('DOMContentLoaded', boot);
+
+async function boot() {
   fixNavActiveLink();
-
-  /* Spawn particles if header exists */
   spawnParticles();
-
-  /* Fetch data */
-  const [p1, p2, p3, trendData, topData] = await Promise.all([
-    fetchPage(1), fetchPage(2), fetchPage(3),
-    fetchTrending(),
-    fetchTopRated(),
-  ]);
-
-  state.allMovies = [
-    ...(p1?.results||[]),
-    ...(p2?.results||[]),
-    ...(p3?.results||[]),
-  ];
-
-  readURLParams();
-  applyFilters();
-  renderGrid();
-
-  buildCarousel('toprated-cs-track',  topData?.results||[],   'toprated-detail',  'Top Rated');
-  buildCarousel('trending-cs-track',  trendData?.results||[], 'trending-detail',  'Trending');
-  buildRecentlyAdded(state.allMovies.slice(0, 12));
-
   wireFilters();
   wireSearch();
   wireSort();
   wireViewToggle();
   wireSearchChips();
-
+  wireOverlaySearch();
   initReveal();
+  readURLParams();
+  renderLoading();
 
-  /* URL search query */
-  const urlQ = new URLSearchParams(location.search).get('q');
-  if (urlQ) {
-    const inp = document.getElementById('movies-search-input');
-    if (inp) {
-      inp.value = urlQ;
-      state.query = urlQ.toLowerCase();
-      applyFilters();
-      renderGrid();
-    }
+  try {
+    await loadGenres();
+    state.allMovies = await fetchMovies();
+    applyFilters();
+    renderGrid();
+    buildCarousel('toprated-cs-track', getTopRatedMovies(), 'toprated-detail', 'Top Rated');
+    buildCarousel('trending-cs-track', getTrendingMovies(), 'trending-detail', 'Trending');
+    buildRecentlyAdded(getRecentlyAddedMovies());
+  } catch (error) {
+    console.error(error);
+    renderError('Could not load movies. Start FastAPI and refresh this page.');
   }
-})();
+}
 
 /* ============================================================
-   FIX NAV ACTIVE LINK
-   Marks the current page link as active, and updates on click
+   API
 ============================================================ */
-function fixNavActiveLink() {
-  const currentPage = location.pathname.split('/').pop() || 'home.html';
+async function apiGet(path, params = {}) {
+  const url = new URL(path, normalizeBaseUrl(API_BASE));
 
-  /* Remove all active classes first */
-  document.querySelectorAll('.nav-link, .nav-mobile-link').forEach(link => {
-    link.classList.remove('active');
-    link.removeAttribute('aria-current');
-
-    /* Mark current page */
-    const href = link.getAttribute('href') || '';
-    if (href === currentPage || (currentPage === '' && href === 'home.html')) {
-      link.classList.add('active');
-      link.setAttribute('aria-current', 'page');
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '' && value !== 'all') {
+      url.searchParams.set(key, value);
     }
-
-    /* On click — update active state */
-    link.addEventListener('click', function() {
-      document.querySelectorAll('.nav-link, .nav-mobile-link').forEach(l => {
-        l.classList.remove('active');
-        l.removeAttribute('aria-current');
-      });
-      this.classList.add('active');
-      this.setAttribute('aria-current', 'page');
-    });
   });
+
+  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`${response.status} ${response.statusText}: ${url}`);
+  return response.json();
 }
 
-/* ============================================================
-   FETCH
-============================================================ */
-async function fetchPage(page) {
-  try {
-    const url = `https://api.themoviedb.org/3/discover/movie?api_key=2dca580c2a14b55200e784d157207b4d&language=en-US&sort_by=popularity.desc&page=${page}`;
-    const res = await fetch(url);
-    return res.ok ? res.json() : null;
-  } catch { return null; }
+async function fetchMovies() {
+  const data = await apiGet('/movies/', { page: 1, limit: API_LIMIT });
+  return normalizeMovieList(data);
 }
-async function fetchTrending() {
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=2dca580c2a14b55200e784d157207b4d`);
-    return res.ok ? res.json() : null;
-  } catch { return null; }
+
+async function fetchSearchMovies(query) {
+  const data = await apiGet('/movies/search/', { q: query, page: 1, limit: API_LIMIT });
+  return normalizeMovieList(data);
 }
-async function fetchTopRated() {
+
+async function fetchFilteredMovies() {
+  const data = await apiGet('/movies/filter/', {
+    genre: genreValueForApi(state.genre),
+    year: state.year,
+    page: 1,
+    limit: API_LIMIT,
+  });
+  return normalizeMovieList(data);
+}
+
+async function loadGenres() {
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=2dca580c2a14b55200e784d157207b4d&language=en-US&page=1`);
-    return res.ok ? res.json() : null;
-  } catch { return null; }
+    const genres = await apiGet('/genres/');
+    if (Array.isArray(genres)) {
+      genres.forEach(genre => {
+        if (genre && genre.id && genre.name) GENRE_MAP[genre.id] = genre.name;
+      });
+    }
+  } catch (error) {
+    console.warn('Genres endpoint not available yet:', error);
+  }
+}
+
+function normalizeBaseUrl(value) {
+  const base = String(value || '').trim();
+  return base.endsWith('/') ? base : `${base}/`;
+}
+
+function normalizeMovieList(data) {
+  const list = Array.isArray(data) ? data : data?.results || data?.items || [];
+  return list.map(normalizeMovie).filter(movie => movie.id !== undefined && movie.id !== null);
+}
+
+function normalizeMovie(movie) {
+  const images = Array.isArray(movie.images) ? movie.images : [];
+  const genre = normalizeGenre(movie.genre, movie.genre_id, movie.genre_name);
+  const releaseYear = movie.release_year || yearFromDate(movie.release_date);
+  const rating = Number(movie.rating ?? movie.vote_average ?? 0);
+  const poster = resolveImageUrl(
+    movie.poster_url ||
+    movie.poster_path ||
+    movie.image_url ||
+    images[0]?.image_url ||
+    images[0]?.url ||
+    ''
+  );
+
+  return {
+    id: movie.id,
+    title: movie.title || movie.name || 'Untitled',
+    description: movie.description || movie.overview || '',
+    release_year: releaseYear,
+    duration: movie.duration,
+    language: movie.language || '',
+    rating,
+    popularity: Number(movie.popularity ?? rating ?? 0),
+    poster_url: poster,
+    backdrop_url: resolveImageUrl(movie.backdrop_url || movie.backdrop_path || poster),
+    trailer_url: movie.trailer_url || '',
+    genre,
+    images,
+    raw: movie,
+  };
+}
+
+function normalizeGenre(genre, genreId, genreName) {
+  if (genre && typeof genre === 'object') {
+    return { id: genre.id ?? genreId ?? null, name: genre.name || GENRE_MAP[genre.id] || 'Film' };
+  }
+
+  if (typeof genre === 'string' && genre.trim()) {
+    return { id: genreId ?? null, name: genre.trim() };
+  }
+
+  if (genreId && GENRE_MAP[genreId]) {
+    return { id: genreId, name: GENRE_MAP[genreId] };
+  }
+
+  if (genreName) {
+    return { id: genreId ?? null, name: genreName };
+  }
+
+  return { id: null, name: 'Film' };
+}
+
+function yearFromDate(value) {
+  const match = String(value || '').match(/\d{4}/);
+  return match ? Number(match[0]) : null;
+}
+
+function resolveImageUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || raw === 'null' || raw === 'undefined') return PLACEHOLDER_IMAGE;
+  if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
+  if (raw.startsWith('//')) return `${location.protocol}${raw}`;
+  if (raw.startsWith('/assets/') || raw.startsWith('/static/') || raw.startsWith('/media/') || raw.startsWith('/uploads/')) {
+    return new URL(raw, normalizeBaseUrl(API_BASE)).toString();
+  }
+  if (raw.startsWith('/')) return `${TMDB_IMAGE_BASE}${raw}`;
+  return raw;
+}
+
+function getPoster(movie) {
+  return resolveImageUrl(movie?.poster_url || movie?.poster_path || movie?.images?.[0]?.image_url || '');
+}
+
+function getBackdrop(movie) {
+  return resolveImageUrl(movie?.backdrop_url || movie?.backdrop_path || getPoster(movie));
+}
+
+function genreName(movie) {
+  return movie?.genre?.name || 'Film';
+}
+
+function genreValueForApi(value) {
+  if (!value || value === 'all') return '';
+  return GENRE_MAP[value] || value;
+}
+
+function movieForStorage(movie) {
+  return {
+    id: movie.id,
+    title: movie.title,
+    description: movie.description,
+    release_year: movie.release_year,
+    duration: movie.duration,
+    language: movie.language,
+    rating: movie.rating,
+    poster_url: movie.poster_url,
+    trailer_url: movie.trailer_url,
+    genre: movie.genre,
+    images: movie.images,
+  };
 }
 
 /* ============================================================
    URL PARAMS
 ============================================================ */
 function readURLParams() {
-  const p = new URLSearchParams(location.search);
-  if (p.get('genre'))  state.genre  = p.get('genre');
-  if (p.get('year'))   state.year   = p.get('year');
-  if (p.get('filter')) {
-    const f = p.get('filter');
-    if (f === 'trending')    state.sort = 'popularity';
-    if (f === 'top_rated')   state.sort = 'rating';
-    if (f === 'now_playing') state.sort = 'release';
-    if (f === 'upcoming')    state.sort = 'release';
-  }
-  if (p.get('sort')) {
-    const s = p.get('sort');
-    if (s === 'rating') state.sort = 'rating';
-    if (s === 'recent') state.sort = 'release';
-  }
+  const params = new URLSearchParams(location.search);
+  if (params.get('genre')) state.genre = params.get('genre');
+  if (params.get('year')) state.year = params.get('year');
+  if (params.get('q')) state.query = params.get('q').trim().toLowerCase();
 
-  /* Sync filter chips to URL state */
-  syncChips('genre',  state.genre);
-  syncChips('year',   state.year);
+  const sort = params.get('sort');
+  const filter = params.get('filter');
+  if (sort === 'rating' || filter === 'top_rated') state.sort = 'rating';
+  if (sort === 'recent' || filter === 'now_playing' || filter === 'upcoming') state.sort = 'release';
+  if (filter === 'trending') state.sort = 'popularity';
+
+  syncChips('genre', state.genre);
+  syncChips('year', state.year);
   syncChips('rating', state.rating);
+
+  const searchInput = document.getElementById('movies-search-input');
+  if (searchInput && state.query) searchInput.value = state.query;
 
   const sortEl = document.getElementById('sort-select');
   if (sortEl) sortEl.value = state.sort;
 }
 
 /* ============================================================
-   APPLY FILTERS — Genre, Year, Rating, Search all work
+   FILTERS
 ============================================================ */
-function applyFilters() {
-  let list = [...state.allMovies];
+function applyFilters(source = state.allMovies) {
+  let list = [...source];
 
-  /* Genre filter */
   if (state.genre !== 'all') {
-    const gid = parseInt(state.genre, 10);
-    list = list.filter(m => (m.genre_ids||[]).includes(gid));
+    const wanted = genreValueForApi(state.genre).toLowerCase();
+    list = list.filter(movie => genreName(movie).toLowerCase() === wanted);
   }
 
-  /* Year filter */
   if (state.year !== 'all') {
-    list = list.filter(m => (m.release_date||'').startsWith(state.year));
+    list = list.filter(movie => String(movie.release_year || '') === String(state.year));
   }
 
-  /* Rating filter */
   if (state.rating !== 'all') {
-    const min = parseFloat(state.rating);
-    list = list.filter(m => (m.vote_average||0) >= min);
+    const min = Number(state.rating);
+    list = list.filter(movie => Number(movie.rating || 0) >= min);
   }
 
-  /* Search filter */
   if (state.query) {
     const q = state.query.toLowerCase();
-    list = list.filter(m =>
-      m.title?.toLowerCase().includes(q) ||
-      m.overview?.toLowerCase().includes(q)
+    list = list.filter(movie =>
+      movie.title.toLowerCase().includes(q) ||
+      movie.description.toLowerCase().includes(q) ||
+      genreName(movie).toLowerCase().includes(q) ||
+      movie.language.toLowerCase().includes(q)
     );
   }
 
-  /* Sort */
-  list.sort((a, b) => {
-    if (state.sort === 'rating')  return (b.vote_average||0) - (a.vote_average||0);
-    if (state.sort === 'release') return (b.release_date||'').localeCompare(a.release_date||'');
-    if (state.sort === 'title')   return (a.title||'').localeCompare(b.title||'');
-    return (b.popularity||0) - (a.popularity||0);
-  });
-
+  list.sort(sortMovies);
   state.filtered = list;
   state.page = 1;
+  updateResultState();
+}
 
-  /* Update results count */
+function sortMovies(a, b) {
+  if (state.sort === 'rating') return (b.rating || 0) - (a.rating || 0);
+  if (state.sort === 'release') return (b.release_year || 0) - (a.release_year || 0);
+  if (state.sort === 'title') return (a.title || '').localeCompare(b.title || '');
+  return (b.popularity || b.rating || 0) - (a.popularity || a.rating || 0);
+}
+
+async function refreshMoviesFromApi() {
+  renderLoading();
+  try {
+    let movies;
+    if (state.query) movies = await fetchSearchMovies(state.query);
+    else if (state.genre !== 'all' || state.year !== 'all') movies = await fetchFilteredMovies();
+    else movies = state.allMovies.length ? state.allMovies : await fetchMovies();
+
+    applyFilters(movies);
+    renderGrid();
+  } catch (error) {
+    console.error(error);
+    renderError('Could not load movies from FastAPI.');
+  }
+}
+
+function updateResultState() {
   const countEl = document.getElementById('results-count-num');
-  if (countEl) countEl.textContent = list.length.toLocaleString();
+  if (countEl) countEl.textContent = state.filtered.length.toLocaleString();
 
   renderActiveFilterTags();
 
-  /* Show / hide empty state */
   const empty = document.getElementById('empty-state');
-  const grid  = document.getElementById('movies-grid');
-  if (list.length === 0) {
-    if (empty) { empty.style.display = 'block'; empty.classList.add('visible'); }
-    if (grid)  grid.style.display = 'none';
+  const grid = document.getElementById('movies-grid');
+
+  if (state.filtered.length === 0) {
+    if (empty) {
+      empty.style.display = 'block';
+      empty.classList.add('visible');
+    }
+    if (grid) grid.style.display = 'none';
   } else {
-    if (empty) { empty.style.display = 'none'; empty.classList.remove('visible'); }
-    if (grid)  grid.style.display = '';
+    if (empty) {
+      empty.style.display = 'none';
+      empty.classList.remove('visible');
+    }
+    if (grid) grid.style.display = '';
   }
 }
 
 /* ============================================================
-   RENDER GRID
+   GRID
 ============================================================ */
+function renderLoading() {
+  const grid = document.getElementById('movies-grid');
+  if (!grid) return;
+  grid.style.display = '';
+  grid.className = state.view === 'list' ? 'movies-grid list-view' : 'movies-grid';
+  grid.innerHTML = Array.from({ length: 10 }, () => `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton skeleton-poster"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-meta"></div>
+    </div>
+  `).join('');
+}
+
 function renderGrid() {
   const grid = document.getElementById('movies-grid');
   if (!grid) return;
 
   const start = (state.page - 1) * state.perPage;
-  const page  = state.filtered.slice(start, start + state.perPage);
+  const page = state.filtered.slice(start, start + state.perPage);
 
-  if (state.view === 'list') {
-    grid.className = 'movies-grid list-view';
-  } else {
-    grid.className = 'movies-grid';
-  }
+  grid.className = state.view === 'list' ? 'movies-grid list-view' : 'movies-grid';
+  grid.innerHTML = page.map(buildGridCard).join('');
 
-  grid.innerHTML = page.map((m, i) => buildGridCard(m, i)).join('');
-
-  /* Stagger animation delays */
   grid.querySelectorAll('.mgc').forEach((card, i) => {
-    card.style.animationDelay = (i * 0.04) + 's';
+    card.style.animationDelay = `${i * 0.04}s`;
   });
 
-  /* Wire watchlist buttons */
-  grid.querySelectorAll('.mgc-wl-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation();
-      const movie = JSON.parse(btn.dataset.movie);
-      const added = toggleWatchlist(movie);
-      btn.classList.toggle('active', added);
-      const svg = btn.querySelector('svg');
-      if (svg) svg.setAttribute('fill', added ? 'currentColor' : 'none');
-    });
-  });
-
-  /* Wire favourite buttons */
-  grid.querySelectorAll('.mgc-fav-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation();
-      const movie = JSON.parse(btn.dataset.movie);
-      const added = toggleFavourite(movie);
-      btn.classList.toggle('active', added);
-      const svg = btn.querySelector('svg');
-      if (svg) svg.setAttribute('fill', added ? 'currentColor' : 'none');
-    });
-  });
-
-  /* Wire quick view */
-  grid.querySelectorAll('.mgc-qv-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation();
-      const movie = JSON.parse(btn.dataset.movie);
-      openQuickView(movie);
-    });
-  });
-
+  wireGridActions(grid);
   renderPagination();
 }
 
-/* ============================================================
-   BUILD GRID CARD — uses .mgc classes to match CSS
-============================================================ */
-function buildGridCard(movie, idx) {
-  const rating = movie.vote_average?.toFixed(1) || '--';
-  const year   = movie.release_date?.slice(0,4) || '--';
-  const genre  = genreName(movie.genre_ids);
-  const inWL   = isInWatchlist(movie.id);
-  const movieJ = JSON.stringify({
-    id: movie.id, title: movie.title,
-    vote_average: movie.vote_average,
-    release_date: movie.release_date,
-    genre_ids: movie.genre_ids,
-    overview: movie.overview,
-    poster_path: movie.poster_path,
-  }).replace(/"/g, '&quot;');
+function buildGridCard(movie) {
+  const rating = movie.rating ? movie.rating.toFixed(1) : '--';
+  const year = movie.release_year || '--';
+  const genre = genreName(movie);
+  const inWL = isInWatchlist(movie.id);
+  const inFav = isInFavourite(movie.id);
+  const movieJ = escAttr(JSON.stringify(movieForStorage(movie)));
 
-  /* LIST VIEW */
   if (state.view === 'list') {
     return `
       <div class="mgc" role="listitem">
         <div class="mgc-poster" style="width:80px;flex-shrink:0;">
-          <img src="${getPoster(movie.id, movie.poster_path)}" alt="${escHtml(movie.title)}" loading="lazy">
-          <div class="mgc-rating">
-            <svg viewBox="0 0 24 24" fill="#f4c542" width="10" height="10"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            ${rating}
-          </div>
+          <img src="${escAttr(getPoster(movie))}" alt="${escAttr(movie.title)}" loading="lazy">
+          <div class="mgc-rating">${starSvg(10)} ${rating}</div>
         </div>
         <div class="mgc-info" style="flex:1;padding:8px 0;">
           <a href="movie-details.html?id=${movie.id}" class="mgc-title">${escHtml(movie.title)}</a>
           <div class="mgc-meta-row">
             <span>${year}</span>
-            ${genre ? `<span class="mgc-genre-tag">${genre}</span>` : ''}
+            <span class="mgc-genre-tag">${escHtml(genre)}</span>
           </div>
-          <p style="font-size:var(--text-xs);color:var(--white-30);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">${escHtml(movie.overview||'')}</p>
+          <p style="font-size:var(--text-xs);color:var(--white-30);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">${escHtml(movie.description || '')}</p>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;">
-          <a href="movie-details.html?id=${movie.id}" class="mgc-play-btn" style="position:static;transform:none;opacity:1;margin-bottom:0;width:40px;height:40px;" aria-label="Watch ${escHtml(movie.title)}">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+          <a href="movie-details.html?id=${movie.id}" class="mgc-play-btn" style="position:static;transform:none;opacity:1;margin-bottom:0;width:40px;height:40px;" aria-label="Watch ${escAttr(movie.title)}">
+            ${playSvg(16)}
           </a>
           <div style="display:flex;gap:6px;">
-            <button class="mgc-action-btn mgc-wl-btn ${inWL?'active':''}" data-movie="${movieJ}" aria-label="Watchlist">
-              <svg viewBox="0 0 24 24" fill="${inWL?'currentColor':'none'}" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            </button>
-            <button class="mgc-action-btn mgc-fav-btn" data-movie="${movieJ}" aria-label="Favourite">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>
+            <button class="mgc-action-btn mgc-wl-btn ${inWL ? 'active' : ''}" data-movie="${movieJ}" aria-label="Watchlist">${bookmarkSvg(inWL)}</button>
+            <button class="mgc-action-btn mgc-fav-btn ${inFav ? 'active' : ''}" data-movie="${movieJ}" aria-label="Favourite">${heartSvg(inFav)}</button>
           </div>
         </div>
       </div>`;
   }
 
-  /* GRID VIEW */
   return `
     <div class="mgc" role="listitem">
       <div class="mgc-poster">
-        <img src="${getPoster(movie.id, movie.poster_path)}" alt="${escHtml(movie.title)}" loading="lazy">
-        <div class="mgc-rating">
-          <svg viewBox="0 0 24 24" fill="#f4c542" width="10" height="10"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          ${rating}
-        </div>
+        <img src="${escAttr(getPoster(movie))}" alt="${escAttr(movie.title)}" loading="lazy">
+        <div class="mgc-rating">${starSvg(10)} ${rating}</div>
         <div class="mgc-gradient"></div>
         <div class="mgc-actions">
-          <a href="movie-details.html?id=${movie.id}" class="mgc-play-btn" aria-label="Watch ${escHtml(movie.title)}">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
+          <a href="movie-details.html?id=${movie.id}" class="mgc-play-btn" aria-label="Watch ${escAttr(movie.title)}">
+            ${playSvg(20)}
           </a>
           <div class="mgc-action-row">
-            <button class="mgc-action-btn mgc-wl-btn ${inWL?'active':''}" data-movie="${movieJ}" aria-label="Watchlist">
-              <svg viewBox="0 0 24 24" fill="${inWL?'currentColor':'none'}" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            </button>
-            <button class="mgc-action-btn mgc-fav-btn" data-movie="${movieJ}" aria-label="Favourite">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>
-            <button class="mgc-action-btn mgc-qv-btn" data-movie="${movieJ}" aria-label="Quick view">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
+            <button class="mgc-action-btn mgc-wl-btn ${inWL ? 'active' : ''}" data-movie="${movieJ}" aria-label="Watchlist">${bookmarkSvg(inWL)}</button>
+            <button class="mgc-action-btn mgc-fav-btn ${inFav ? 'active' : ''}" data-movie="${movieJ}" aria-label="Favourite">${heartSvg(inFav)}</button>
+            <button class="mgc-action-btn mgc-qv-btn" data-movie="${movieJ}" aria-label="Quick view">${eyeSvg()}</button>
           </div>
         </div>
       </div>
@@ -384,63 +423,119 @@ function buildGridCard(movie, idx) {
         <a href="movie-details.html?id=${movie.id}" class="mgc-title">${escHtml(movie.title)}</a>
         <div class="mgc-meta-row">
           <span>${year}</span>
-          ${genre ? `<span class="mgc-genre-tag">${genre}</span>` : ''}
+          <span class="mgc-genre-tag">${escHtml(genre)}</span>
         </div>
       </div>
     </div>`;
 }
 
+function wireGridActions(root) {
+  root.querySelectorAll('.mgc-wl-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const added = toggleWatchlist(readMovieData(btn));
+      btn.classList.toggle('active', added);
+      btn.innerHTML = bookmarkSvg(added);
+    });
+  });
+
+  root.querySelectorAll('.mgc-fav-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const added = toggleFavourite(readMovieData(btn));
+      btn.classList.toggle('active', added);
+      btn.innerHTML = heartSvg(added);
+    });
+  });
+
+  root.querySelectorAll('.mgc-qv-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openQuickView(readMovieData(btn));
+    });
+  });
+}
+
+function readMovieData(btn) {
+  try {
+    return JSON.parse(btn.dataset.movie || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function renderError(message) {
+  const grid = document.getElementById('movies-grid');
+  const countEl = document.getElementById('results-count-num');
+  if (countEl) countEl.textContent = '0';
+  if (!grid) return;
+  grid.style.display = '';
+  grid.innerHTML = `<div class="suggest-empty" style="grid-column:1/-1;padding:32px;text-align:center;">${escHtml(message)}</div>`;
+}
+
 /* ============================================================
-   PAGINATION — uses .pag-btn (matches CSS)
+   PAGINATION
 ============================================================ */
 function renderPagination() {
   const wrap = document.getElementById('pagination');
   if (!wrap) return;
 
   const total = Math.ceil(state.filtered.length / state.perPage);
-  if (total <= 1) { wrap.innerHTML = ''; return; }
+  if (total <= 1) {
+    wrap.innerHTML = '';
+    return;
+  }
 
   const p = state.page;
   let pages = [];
   if (total <= 7) {
-    pages = Array.from({length: total}, (_, i) => i + 1);
+    pages = Array.from({ length: total }, (_, i) => i + 1);
   } else {
     pages = [1];
-    if (p > 3) pages.push('…');
-    for (let i = Math.max(2, p-1); i <= Math.min(total-1, p+1); i++) pages.push(i);
-    if (p < total - 2) pages.push('…');
+    if (p > 3) pages.push('...');
+    for (let i = Math.max(2, p - 1); i <= Math.min(total - 1, p + 1); i += 1) pages.push(i);
+    if (p < total - 2) pages.push('...');
     pages.push(total);
   }
 
   wrap.innerHTML = `
-    <button class="pag-btn" id="pag-prev" aria-label="Previous page" ${p===1?'disabled':''}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    </button>
-    ${pages.map(pg => pg === '…'
-      ? `<span class="pag-ellipsis">…</span>`
-      : `<button class="pag-btn ${pg===p?'active':''}" data-pg="${pg}">${pg}</button>`
+    <button class="pag-btn" id="pag-prev" aria-label="Previous page" ${p === 1 ? 'disabled' : ''}>${arrowLeftSvg()}</button>
+    ${pages.map(pg => pg === '...'
+      ? '<span class="pag-ellipsis">...</span>'
+      : `<button class="pag-btn ${pg === p ? 'active' : ''}" data-pg="${pg}">${pg}</button>`
     ).join('')}
-    <button class="pag-btn" id="pag-next" aria-label="Next page" ${p===total?'disabled':''}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>`;
+    <button class="pag-btn" id="pag-next" aria-label="Next page" ${p === total ? 'disabled' : ''}>${arrowRightSvg()}</button>`;
 
   wrap.querySelectorAll('[data-pg]').forEach(btn => {
     btn.addEventListener('click', () => {
-      state.page = parseInt(btn.dataset.pg, 10);
+      state.page = Number(btn.dataset.pg);
       renderGrid();
       scrollToGrid();
     });
   });
+
   document.getElementById('pag-prev')?.addEventListener('click', () => {
-    if (state.page > 1) { state.page--; renderGrid(); scrollToGrid(); }
+    if (state.page > 1) {
+      state.page -= 1;
+      renderGrid();
+      scrollToGrid();
+    }
   });
+
   document.getElementById('pag-next')?.addEventListener('click', () => {
-    if (state.page < total) { state.page++; renderGrid(); scrollToGrid(); }
+    if (state.page < total) {
+      state.page += 1;
+      renderGrid();
+      scrollToGrid();
+    }
   });
 }
 
 function scrollToGrid() {
-  window.scrollTo({ top: (document.getElementById('movies-grid')?.offsetTop||0) - 120, behavior: 'smooth' });
+  window.scrollTo({ top: (document.getElementById('movies-grid')?.offsetTop || 0) - 120, behavior: 'smooth' });
 }
 
 /* ============================================================
@@ -451,34 +546,49 @@ function renderActiveFilterTags() {
   if (!wrap) return;
 
   const tags = [];
-  if (state.genre  !== 'all') tags.push({ label: GENRE_MAP[state.genre] || state.genre, key: 'genre' });
-  if (state.year   !== 'all') tags.push({ label: state.year, key: 'year' });
-  if (state.rating !== 'all') tags.push({ label: `${state.rating}+ ★`, key: 'rating' });
-  if (state.query)             tags.push({ label: `"${state.query}"`, key: 'query' });
+  if (state.genre !== 'all') tags.push({ label: genreValueForApi(state.genre), key: 'genre' });
+  if (state.year !== 'all') tags.push({ label: state.year, key: 'year' });
+  if (state.rating !== 'all') tags.push({ label: `${state.rating}+ rating`, key: 'rating' });
+  if (state.query) tags.push({ label: `"${state.query}"`, key: 'query' });
 
-  wrap.innerHTML = tags.map(t => `
+  wrap.innerHTML = tags.map(tag => `
     <div class="active-filter-tag" role="listitem">
-      ${escHtml(t.label)}
-      <button class="active-filter-remove" onclick="clearFilter('${t.key}')" aria-label="Remove ${escHtml(t.label)} filter">
+      ${escHtml(tag.label)}
+      <button class="active-filter-remove" data-clear="${escAttr(tag.key)}" aria-label="Remove ${escAttr(tag.label)} filter">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="10" height="10">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>`).join('');
+
+  wrap.querySelectorAll('[data-clear]').forEach(btn => {
+    btn.addEventListener('click', () => clearFilter(btn.dataset.clear));
+  });
 }
 
-window.clearFilter = function(key) {
-  if (key === 'genre')  { state.genre  = 'all'; syncChips('genre',  'all'); }
-  if (key === 'year')   { state.year   = 'all'; syncChips('year',   'all'); }
-  if (key === 'rating') { state.rating = 'all'; syncChips('rating', 'all'); }
-  if (key === 'query')  {
+window.clearFilter = clearFilter;
+
+function clearFilter(key) {
+  if (key === 'genre') {
+    state.genre = 'all';
+    syncChips('genre', 'all');
+  }
+  if (key === 'year') {
+    state.year = 'all';
+    syncChips('year', 'all');
+  }
+  if (key === 'rating') {
+    state.rating = 'all';
+    syncChips('rating', 'all');
+  }
+  if (key === 'query') {
     state.query = '';
-    const inp = document.getElementById('movies-search-input');
-    if (inp) inp.value = '';
+    const input = document.getElementById('movies-search-input');
+    if (input) input.value = '';
     closeSuggestions();
   }
-  applyFilters(); renderGrid();
-};
+  refreshMoviesFromApi();
+}
 
 function syncChips(filter, value) {
   document.querySelectorAll(`[data-filter="${filter}"]`).forEach(btn => {
@@ -487,386 +597,395 @@ function syncChips(filter, value) {
 }
 
 /* ============================================================
-   WIRE FILTERS — clicking Year/Genre/Rating actually works
+   WIRES
 ============================================================ */
 function wireFilters() {
   document.querySelectorAll('.filter-chip[data-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
       const filter = btn.dataset.filter;
-      const value  = btn.dataset.value;
-
-      /* Remove active from siblings in same filter group */
-      document.querySelectorAll(`[data-filter="${filter}"]`).forEach(b => b.classList.remove('active'));
+      const value = btn.dataset.value;
+      document.querySelectorAll(`[data-filter="${filter}"]`).forEach(item => item.classList.remove('active'));
       btn.classList.add('active');
-
-      /* Update state */
       state[filter] = value;
-      state.page    = 1;
-
-      applyFilters();
-      renderGrid();
+      refreshMoviesFromApi();
     });
   });
 
-  /* Empty state reset */
   document.getElementById('empty-reset-btn')?.addEventListener('click', resetAllFilters);
 }
 
 function resetAllFilters() {
-  state.genre  = 'all';
-  state.year   = 'all';
+  state.genre = 'all';
+  state.year = 'all';
   state.rating = 'all';
-  state.query  = '';
-  state.page   = 1;
+  state.query = '';
+  state.page = 1;
 
-  const inp = document.getElementById('movies-search-input');
-  if (inp) inp.value = '';
+  const input = document.getElementById('movies-search-input');
+  if (input) input.value = '';
   closeSuggestions();
 
   document.querySelectorAll('.filter-chip[data-filter]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.value === 'all');
   });
-  applyFilters();
-  renderGrid();
+
+  refreshMoviesFromApi();
 }
 
-/* ============================================================
-   WIRE SEARCH + AUTOCOMPLETE
-   Type "op" → shows movies whose title STARTS WITH "op" first,
-   then contains "op" — highlighted in gold
-============================================================ */
 function wireSearch() {
-  const input    = document.getElementById('movies-search-input');
+  const input = document.getElementById('movies-search-input');
   const clearBtn = document.getElementById('movies-search-clear');
-  const suggest  = document.getElementById('movies-suggestions');
+  const suggest = document.getElementById('movies-suggestions');
   if (!input) return;
 
-  let debounceTimer;
-
+  let timer;
   input.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
+    clearTimeout(timer);
     const q = input.value.trim();
+    clearBtn?.classList.toggle('visible', q.length > 0);
 
-    /* Show/hide clear button */
-    if (clearBtn) clearBtn.classList.toggle('visible', q.length > 0);
-
-    debounceTimer = setTimeout(() => {
+    timer = setTimeout(async () => {
       state.query = q.toLowerCase();
-      applyFilters();
-      renderGrid();
+      await refreshMoviesFromApi();
 
-      if (q.length < 1) { closeSuggestions(); return; }
-
-      /* ── Autocomplete logic ──
-         Priority 1: title STARTS with query
-         Priority 2: title CONTAINS query (but doesn't start with it)
-         Priority 3: overview contains query
-      */
-      const ql = q.toLowerCase();
-      const startsWith = [];
-      const contains   = [];
-      const overviewHit = [];
-
-      state.allMovies.forEach(m => {
-        const title = (m.title||'').toLowerCase();
-        if (title.startsWith(ql)) {
-          startsWith.push(m);
-        } else if (title.includes(ql)) {
-          contains.push(m);
-        } else if ((m.overview||'').toLowerCase().includes(ql)) {
-          overviewHit.push(m);
-        }
-      });
-
-      /* Merge and cap at 7 */
-      const hits = [...startsWith, ...contains, ...overviewHit].slice(0, 7);
-
-      if (!suggest) return;
-
-      if (hits.length === 0) {
-        suggest.innerHTML = `<div class="suggest-empty">No movies found for "<strong>${escHtml(q)}</strong>"</div>`;
-        suggest.classList.add('visible');
-        suggest.style.display = 'block';
+      if (q.length < 1) {
+        closeSuggestions();
         return;
       }
 
-      suggest.innerHTML = hits.map(m => {
-        const title = m.title || '';
-        /* Highlight matched part in gold */
-        const idx = title.toLowerCase().indexOf(ql);
-        let highlightedTitle = escHtml(title);
-        if (idx !== -1) {
-          highlightedTitle =
-            escHtml(title.slice(0, idx)) +
-            `<em>${escHtml(title.slice(idx, idx + q.length))}</em>` +
-            escHtml(title.slice(idx + q.length));
-        }
-
-        return `
-          <a href="movie-details.html?id=${m.id}" class="suggest-item" aria-label="${escHtml(title)}">
-            <img src="${getPoster(m.id, m.poster_path)}" alt="${escHtml(title)}" loading="lazy">
-            <div class="suggest-item-info">
-              <div class="suggest-item-title">${highlightedTitle}</div>
-              <div class="suggest-item-meta">${m.release_date?.slice(0,4)||'--'} · ${genreName(m.genre_ids)||'Film'}</div>
-            </div>
-            <div class="suggest-item-rating">★ ${m.vote_average?.toFixed(1)||'--'}</div>
-          </a>`;
-      }).join('');
-
-      suggest.classList.add('visible');
-      suggest.style.display = 'block';
-    }, 200);
+      renderSuggestions(suggest, suggestFromMovies(state.filtered.length ? state.filtered : state.allMovies, q), q);
+    }, 250);
   });
 
-  /* Clear button */
   clearBtn?.addEventListener('click', () => {
-    input.value  = '';
-    state.query  = '';
-    if (clearBtn) clearBtn.classList.remove('visible');
+    input.value = '';
+    state.query = '';
+    clearBtn.classList.remove('visible');
     closeSuggestions();
-    applyFilters();
-    renderGrid();
+    refreshMoviesFromApi();
     input.focus();
   });
 
-  /* Close on outside click */
   document.addEventListener('click', e => {
     const bar = document.getElementById('movies-search-bar');
     if (bar && !bar.contains(e.target)) closeSuggestions();
   });
 
-  /* Keyboard: Escape closes */
   input.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeSuggestions(); input.blur(); }
+    if (e.key === 'Escape') {
+      closeSuggestions();
+      input.blur();
+    }
   });
+}
+
+function suggestFromMovies(movies, query) {
+  const q = query.toLowerCase();
+  const startsWith = [];
+  const contains = [];
+  const details = [];
+
+  movies.forEach(movie => {
+    const title = (movie.title || '').toLowerCase();
+    if (title.startsWith(q)) startsWith.push(movie);
+    else if (title.includes(q)) contains.push(movie);
+    else if ((movie.description || '').toLowerCase().includes(q) || genreName(movie).toLowerCase().includes(q)) details.push(movie);
+  });
+
+  return [...startsWith, ...contains, ...details].slice(0, 7);
+}
+
+function renderSuggestions(container, movies, query) {
+  if (!container) return;
+
+  if (!movies.length) {
+    container.innerHTML = `<div class="suggest-empty">No movies found for "<strong>${escHtml(query)}</strong>"</div>`;
+    container.classList.add('visible');
+    container.style.display = 'block';
+    return;
+  }
+
+  const q = query.toLowerCase();
+  container.innerHTML = movies.map(movie => {
+    const title = movie.title || '';
+    const idx = title.toLowerCase().indexOf(q);
+    const highlighted = idx === -1
+      ? escHtml(title)
+      : escHtml(title.slice(0, idx)) + `<em>${escHtml(title.slice(idx, idx + query.length))}</em>` + escHtml(title.slice(idx + query.length));
+
+    return `
+      <a href="movie-details.html?id=${movie.id}" class="suggest-item" aria-label="${escAttr(title)}">
+        <img src="${escAttr(getPoster(movie))}" alt="${escAttr(title)}" loading="lazy">
+        <div class="suggest-item-info">
+          <div class="suggest-item-title">${highlighted}</div>
+          <div class="suggest-item-meta">${movie.release_year || '--'} - ${escHtml(genreName(movie))}</div>
+        </div>
+        <div class="suggest-item-rating">${movie.rating ? movie.rating.toFixed(1) : '--'}</div>
+      </a>`;
+  }).join('');
+
+  container.classList.add('visible');
+  container.style.display = 'block';
 }
 
 function closeSuggestions() {
   const suggest = document.getElementById('movies-suggestions');
-  if (suggest) { suggest.innerHTML = ''; suggest.classList.remove('visible'); suggest.style.display = 'none'; }
+  if (!suggest) return;
+  suggest.innerHTML = '';
+  suggest.classList.remove('visible');
+  suggest.style.display = 'none';
 }
 
-/* ============================================================
-   WIRE SORT
-============================================================ */
 function wireSort() {
-  const sel = document.getElementById('sort-select');
-  sel?.addEventListener('change', () => {
-    state.sort = sel.value;
+  const select = document.getElementById('sort-select');
+  select?.addEventListener('change', () => {
+    state.sort = select.value;
     applyFilters();
     renderGrid();
   });
 }
 
-/* ============================================================
-   WIRE VIEW TOGGLE
-============================================================ */
 function wireViewToggle() {
   const gridBtn = document.getElementById('grid-view-btn');
   const listBtn = document.getElementById('list-view-btn');
 
   gridBtn?.addEventListener('click', () => {
     state.view = 'grid';
-    gridBtn.classList.add('active'); gridBtn.setAttribute('aria-pressed', 'true');
-    listBtn?.classList.remove('active'); listBtn?.setAttribute('aria-pressed', 'false');
+    gridBtn.classList.add('active');
+    gridBtn.setAttribute('aria-pressed', 'true');
+    listBtn?.classList.remove('active');
+    listBtn?.setAttribute('aria-pressed', 'false');
     renderGrid();
   });
+
   listBtn?.addEventListener('click', () => {
     state.view = 'list';
-    listBtn.classList.add('active'); listBtn.setAttribute('aria-pressed', 'true');
-    gridBtn?.classList.remove('active'); gridBtn?.setAttribute('aria-pressed', 'false');
+    listBtn.classList.add('active');
+    listBtn.setAttribute('aria-pressed', 'true');
+    gridBtn?.classList.remove('active');
+    gridBtn?.setAttribute('aria-pressed', 'false');
     renderGrid();
   });
 }
 
-/* ============================================================
-   WIRE SEARCH CHIPS
-============================================================ */
 function wireSearchChips() {
   document.querySelectorAll('.search-chip[data-query]').forEach(chip => {
     chip.addEventListener('click', () => {
-      const q = chip.dataset.query;
-      const inp = document.getElementById('movies-search-input');
-      if (inp) {
-        inp.value = q;
-        inp.dispatchEvent(new Event('input'));
-        inp.focus();
-      }
+      const input = document.getElementById('movies-search-input');
+      if (!input) return;
+      input.value = chip.dataset.query;
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+    });
+  });
+}
+
+function wireOverlaySearch() {
+  document.querySelectorAll('.search-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      const input = document.getElementById('movies-search-input');
+      if (!input) return;
+      input.value = tag.textContent.trim();
+      input.dispatchEvent(new Event('input'));
+      input.focus();
     });
   });
 }
 
 /* ============================================================
-   BUILD PREMIUM CAROUSEL
+   CAROUSELS
 ============================================================ */
+function getTopRatedMovies() {
+  return [...state.allMovies].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 15);
+}
+
+function getTrendingMovies() {
+  return [...state.allMovies].sort((a, b) => (b.popularity || b.rating || 0) - (a.popularity || a.rating || 0)).slice(0, 15);
+}
+
+function getRecentlyAddedMovies() {
+  return [...state.allMovies].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 12);
+}
+
 function buildCarousel(trackId, movies, detailId, label) {
-  const track  = document.getElementById(trackId);
+  const track = document.getElementById(trackId);
   const detail = document.getElementById(detailId);
   if (!track || !movies.length) return;
 
-  let activeIdx = 0;
-
-  track.innerHTML = movies.slice(0, 15).map((m, i) => {
-    const rating = m.vote_average?.toFixed(1) || '--';
-    return `
-      <div class="cs-card ${i===0?'cs-active':''}" data-idx="${i}" role="listitem" tabindex="0" aria-label="${escHtml(m.title||'')}">
-        <div class="cs-card-poster">
-          <span class="cs-card-rank">${String(i+1).padStart(2,'0')}</span>
-          <img src="${getPoster(m.id, m.poster_path)}" alt="${escHtml(m.title||'')}" loading="${i<3?'eager':'lazy'}">
-          <div class="cs-card-badge">
-            <svg viewBox="0 0 24 24" fill="#f4c542" width="9" height="9"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            ${rating}
-          </div>
-          <div class="cs-card-hover">
-            <a href="movie-details.html?id=${m.id}" class="cs-card-play" aria-label="Watch ${escHtml(m.title||'')}">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
-            </a>
-          </div>
+  track.innerHTML = movies.map((movie, i) => `
+    <div class="cs-card ${i === 0 ? 'cs-active' : ''}" data-idx="${i}" role="listitem" tabindex="0" aria-label="${escAttr(movie.title)}">
+      <div class="cs-card-poster">
+        <span class="cs-card-rank">${String(i + 1).padStart(2, '0')}</span>
+        <img src="${escAttr(getPoster(movie))}" alt="${escAttr(movie.title)}" loading="${i < 3 ? 'eager' : 'lazy'}">
+        <div class="cs-card-badge">${starSvg(9)} ${movie.rating ? movie.rating.toFixed(1) : '--'}</div>
+        <div class="cs-card-hover">
+          <a href="movie-details.html?id=${movie.id}" class="cs-card-play" aria-label="Watch ${escAttr(movie.title)}">${playSvg(18)}</a>
         </div>
-        <div class="cs-card-info">
-          <div class="cs-card-title">${escHtml(m.title||'')}</div>
-          <div class="cs-card-year">${m.release_date?.slice(0,4)||'--'}</div>
-        </div>
-      </div>`;
-  }).join('');
+      </div>
+      <div class="cs-card-info">
+        <div class="cs-card-title">${escHtml(movie.title)}</div>
+        <div class="cs-card-year">${movie.release_year || '--'}</div>
+      </div>
+    </div>`).join('');
 
-  /* Update detail panel */
-  function updateDetail(idx) {
-    if (!detail) return;
-    const m = movies[idx];
-    const set = (sel, val) => { const el = detail.querySelector(sel); if (el) el.textContent = val; };
-    detail.classList.add('cs-transitioning');
-    setTimeout(() => {
-      set('.cs-detail-eyebrow', `${label} #${idx+1}`);
-      set('.cs-detail-title',   m.title||'');
-      set('.cs-rating-val',     m.vote_average?.toFixed(1)||'--');
-      set('.cs-year-val',       m.release_date?.slice(0,4)||'--');
-      set('.cs-detail-desc',    m.overview||'');
-      set('.cs-genre-val',      genreNames(m.genre_ids)[0]||'');
-      const watchBtn = detail.querySelector('.cs-watch-btn');
-      if (watchBtn) watchBtn.href = `movie-details.html?id=${m.id}`;
-      const wlBtn = detail.querySelector('.cs-wl-btn');
-      if (wlBtn) wlBtn.onclick = () => toggleWatchlist(m);
-      detail.classList.remove('cs-transitioning');
-    }, 200);
-  }
-
-  updateDetail(0);
+  updateCarouselDetail(detail, movies[0], label, 0);
 
   track.querySelectorAll('.cs-card').forEach((card, i) => {
     card.addEventListener('click', () => {
-      track.querySelectorAll('.cs-card').forEach(c => c.classList.remove('cs-active'));
+      track.querySelectorAll('.cs-card').forEach(item => item.classList.remove('cs-active'));
       card.classList.add('cs-active');
-      activeIdx = i;
-      updateDetail(i);
+      updateCarouselDetail(detail, movies[i], label, i);
     });
   });
 
-  /* Prev / Next */
-  const stage   = track.closest('.cs-stage');
-  const prevBtn = stage?.querySelector('.cs-btn-prev');
-  const nextBtn = stage?.querySelector('.cs-btn-next');
-  prevBtn?.addEventListener('click', () => track.scrollBy({ left: -210, behavior: 'smooth' }));
-  nextBtn?.addEventListener('click', () => track.scrollBy({ left:  210, behavior: 'smooth' }));
+  const stage = track.closest('.cs-stage');
+  stage?.querySelector('.cs-btn-prev')?.addEventListener('click', () => track.scrollBy({ left: -210, behavior: 'smooth' }));
+  stage?.querySelector('.cs-btn-next')?.addEventListener('click', () => track.scrollBy({ left: 210, behavior: 'smooth' }));
   initCarouselDrag(track);
 }
 
-/* ============================================================
-   RECENTLY ADDED
-============================================================ */
+function updateCarouselDetail(detail, movie, label, index) {
+  if (!detail || !movie) return;
+
+  const set = (sel, val) => {
+    const el = detail.querySelector(sel);
+    if (el) el.textContent = val;
+  };
+
+  detail.classList.add('cs-transitioning');
+  setTimeout(() => {
+    set('.cs-detail-eyebrow', `${label} #${index + 1}`);
+    set('.cs-detail-title', movie.title);
+    set('.cs-rating-val', movie.rating ? movie.rating.toFixed(1) : '--');
+    set('.cs-year-val', movie.release_year || '--');
+    set('.cs-detail-desc', movie.description || '');
+    set('.cs-genre-val', genreName(movie));
+
+    const watchBtn = detail.querySelector('.cs-watch-btn');
+    if (watchBtn) watchBtn.href = `movie-details.html?id=${movie.id}`;
+
+    const wlBtn = detail.querySelector('.cs-wl-btn');
+    if (wlBtn) wlBtn.onclick = () => toggleWatchlist(movieForStorage(movie));
+
+    detail.classList.remove('cs-transitioning');
+  }, 180);
+}
+
 function buildRecentlyAdded(movies) {
   const track = document.getElementById('recently-track');
   if (!track || !movies.length) return;
 
-  track.innerHTML = movies.map(m => {
-    const rating = m.vote_average?.toFixed(1)||'--';
-    const year   = m.release_date?.slice(0,4)||'--';
-    return `
-      <div class="rc-card" role="listitem">
-        <a href="movie-details.html?id=${m.id}" class="rc-card-link" aria-label="${escHtml(m.title||'')}">
-          <div class="rc-poster">
-            <img src="${getPoster(m.id, m.poster_path)}" alt="${escHtml(m.title||'')}" loading="lazy">
-            <div class="rc-badge">
-              <svg viewBox="0 0 24 24" fill="#f4c542" width="9" height="9"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              ${rating}
-            </div>
-            <div class="rc-hover">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-          </div>
-          <div class="rc-info">
-            <div class="rc-title">${escHtml(m.title||'')}</div>
-            <div class="rc-year">${year}</div>
-          </div>
-        </a>
-      </div>`;
-  }).join('');
+  track.innerHTML = movies.map(movie => `
+    <div class="rc-card" role="listitem">
+      <a href="movie-details.html?id=${movie.id}" class="rc-card-link" aria-label="${escAttr(movie.title)}">
+        <div class="rc-poster">
+          <img src="${escAttr(getPoster(movie))}" alt="${escAttr(movie.title)}" loading="lazy">
+          <div class="rc-badge">${starSvg(9)} ${movie.rating ? movie.rating.toFixed(1) : '--'}</div>
+          <div class="rc-hover">${playSvg(28)}</div>
+        </div>
+        <div class="rc-info">
+          <div class="rc-title">${escHtml(movie.title)}</div>
+          <div class="rc-year">${movie.release_year || '--'}</div>
+        </div>
+      </a>
+    </div>`).join('');
 
   initCarouselDrag(track);
 }
 
 /* ============================================================
-   QUICK VIEW MODAL
+   QUICK VIEW
 ============================================================ */
 function openQuickView(movie) {
-  const modal   = document.getElementById('quickview-modal');
+  const modal = document.getElementById('quickview-modal');
   const content = document.getElementById('quickview-content');
   if (!modal || !content) return;
 
-  const rating = movie.vote_average?.toFixed(1)||'--';
-  const year   = movie.release_date?.slice(0,4)||'--';
-  const genres = genreNames(movie.genre_ids).join(', ');
-
   content.innerHTML = `
     <div style="display:flex;gap:24px;align-items:flex-start">
-      <img src="${getPoster(movie.id, movie.poster_path)}" alt="${escHtml(movie.title||'')}"
+      <img src="${escAttr(getPoster(movie))}" alt="${escAttr(movie.title || '')}"
            style="width:120px;height:180px;object-fit:cover;border-radius:12px;flex-shrink:0;border:1px solid var(--glass-border)">
       <div style="flex:1;min-width:0">
-        <p style="font-size:var(--text-xs);font-weight:700;letter-spacing:var(--tracking-widest);text-transform:uppercase;color:var(--gold);margin-bottom:8px">${escHtml(genres||'Film')}</p>
-        <h3 style="font-family:var(--font-display);font-size:var(--text-3xl);letter-spacing:var(--tracking-wide);color:var(--white);margin-bottom:12px;line-height:1">${escHtml(movie.title||'')}</h3>
+        <p style="font-size:var(--text-xs);font-weight:700;letter-spacing:var(--tracking-widest);text-transform:uppercase;color:var(--gold);margin-bottom:8px">${escHtml(genreName(movie))}</p>
+        <h3 style="font-family:var(--font-display);font-size:var(--text-3xl);letter-spacing:var(--tracking-wide);color:var(--white);margin-bottom:12px;line-height:1">${escHtml(movie.title || '')}</h3>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;font-size:var(--text-sm);color:var(--white-60)">
-          <span style="color:var(--rating-star);font-weight:700">★ ${rating}</span>
-          <span>${year}</span>
+          <span style="color:var(--rating-star);font-weight:700">${movie.rating ? Number(movie.rating).toFixed(1) : '--'}</span>
+          <span>${movie.release_year || '--'}</span>
+          ${movie.duration ? `<span>${movie.duration} min</span>` : ''}
+          ${movie.language ? `<span>${escHtml(movie.language)}</span>` : ''}
         </div>
-        <p style="font-size:var(--text-sm);color:var(--white-60);line-height:1.7;margin-bottom:20px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">${escHtml(movie.overview||'No description available.')}</p>
+        <p style="font-size:var(--text-sm);color:var(--white-60);line-height:1.7;margin-bottom:20px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">${escHtml(movie.description || 'No description available.')}</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           <a href="movie-details.html?id=${movie.id}" class="btn-primary" style="font-size:var(--text-sm);padding:10px 20px">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+            ${playSvg(16)}
             Watch Now
           </a>
-          <button class="btn-ghost" onclick="toggleWatchlist(${JSON.stringify(movie).replace(/"/g,"'")})" style="font-size:var(--text-sm);padding:10px 20px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            Watchlist
-          </button>
+          ${movie.trailer_url ? `<button class="btn-ghost" id="quickview-trailer-btn" style="font-size:var(--text-sm);padding:10px 20px">${playSvg(16)} Trailer</button>` : ''}
         </div>
       </div>
     </div>`;
 
+  content.querySelector('#quickview-trailer-btn')?.addEventListener('click', () => openTrailer(movie.trailer_url));
   modal.classList.add('active');
 }
 
+function openTrailer(url) {
+  const modal = document.getElementById('trailer-modal');
+  const frame = document.getElementById('trailer-iframe');
+  if (!modal || !frame || !url) return;
+  frame.src = toEmbedUrl(url);
+  modal.classList.add('active');
+}
+
+function toEmbedUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const videoId = parsed.searchParams.get('v');
+    if (parsed.hostname.includes('youtube.com') && videoId) return `https://www.youtube.com/embed/${videoId}`;
+    if (parsed.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${parsed.pathname.replace('/', '')}`;
+  } catch {
+    return url;
+  }
+  return url;
+}
+
 /* ============================================================
-   PARTICLES
+   NAV / REVEAL / DRAG
 ============================================================ */
+function fixNavActiveLink() {
+  const currentPage = location.pathname.split('/').pop() || 'home.html';
+  document.querySelectorAll('.nav-link, .nav-mobile-link').forEach(link => {
+    link.classList.remove('active');
+    link.removeAttribute('aria-current');
+    const href = link.getAttribute('href') || '';
+    if (href === currentPage || (currentPage === '' && href === 'home.html')) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
+    }
+  });
+}
+
 function spawnParticles() {
   const container = document.getElementById('header-particles');
   if (!container) return;
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 24; i += 1) {
     const span = document.createElement('span');
     span.className = 'particle';
-    span.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${4+Math.random()*6}s;--delay:${Math.random()*5}s;`;
+    span.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--dur:${4 + Math.random() * 6}s;--delay:${Math.random() * 5}s;`;
     container.appendChild(span);
   }
 }
 
-/* ============================================================
-   CAROUSEL DRAG
-============================================================ */
 function initCarouselDrag(track) {
   if (!track) return;
-  let isDown = false, startX = 0, scrollLeft = 0;
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+
   track.addEventListener('mousedown', e => {
-    isDown = true; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft;
+    isDown = true;
+    startX = e.pageX - track.offsetLeft;
+    scrollLeft = track.scrollLeft;
   });
   track.addEventListener('mouseleave', () => { isDown = false; });
   track.addEventListener('mouseup', () => { isDown = false; });
@@ -878,68 +997,102 @@ function initCarouselDrag(track) {
   });
 }
 
-/* ============================================================
-   SCROLL REVEAL
-============================================================ */
 function initReveal() {
   const revealEls = document.querySelectorAll('.reveal');
   if (!revealEls.length) return;
+
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
     });
   }, { threshold: 0.1 });
+
   revealEls.forEach(el => observer.observe(el));
 }
 
 /* ============================================================
-   WATCHLIST / FAVOURITES (localStorage helpers)
-   These work even without utils.js
+   LOCAL STORAGE
 ============================================================ */
 function isInWatchlist(id) {
-  try {
-    const wl = JSON.parse(localStorage.getItem('cineverse_watchlist') || '[]');
-    return wl.some(m => m.id === id);
-  } catch { return false; }
+  return readStoredList('cineverse_watchlist').some(movie => movie.id === id);
 }
+
+function isInFavourite(id) {
+  return readStoredList('cineverse_favourites').some(movie => movie.id === id);
+}
+
 function toggleWatchlist(movie) {
-  try {
-    let wl = JSON.parse(localStorage.getItem('cineverse_watchlist') || '[]');
-    const idx = wl.findIndex(m => m.id === movie.id);
-    if (idx !== -1) { wl.splice(idx, 1); }
-    else { wl.push(movie); }
-    localStorage.setItem('cineverse_watchlist', JSON.stringify(wl));
-    return idx === -1; // true = added
-  } catch { return false; }
+  return toggleStoredMovie('cineverse_watchlist', movie);
 }
+
 function toggleFavourite(movie) {
+  return toggleStoredMovie('cineverse_favourites', movie);
+}
+
+function readStoredList(key) {
   try {
-    let fav = JSON.parse(localStorage.getItem('cineverse_favourites') || '[]');
-    const idx = fav.findIndex(m => m.id === movie.id);
-    if (idx !== -1) { fav.splice(idx, 1); }
-    else { fav.push(movie); }
-    localStorage.setItem('cineverse_favourites', JSON.stringify(fav));
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function toggleStoredMovie(key, movie) {
+  try {
+    const list = readStoredList(key);
+    const idx = list.findIndex(item => item.id === movie.id);
+    if (idx !== -1) list.splice(idx, 1);
+    else list.push(movie);
+    localStorage.setItem(key, JSON.stringify(list));
     return idx === -1;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 /* ============================================================
-   HELPER — escape HTML to prevent XSS
+   SVG / ESCAPE HELPERS
 ============================================================ */
-function escHtml(str) {
-  return String(str)
+function starSvg(size) {
+  return `<svg viewBox="0 0 24 24" fill="#f4c542" width="${size}" height="${size}" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+}
+
+function playSvg(size) {
+  return `<svg viewBox="0 0 24 24" fill="currentColor" width="${size}" height="${size}" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
+}
+
+function bookmarkSvg(active) {
+  return `<svg viewBox="0 0 24 24" fill="${active ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+}
+
+function heartSvg(active) {
+  return `<svg viewBox="0 0 24 24" fill="${active ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+}
+
+function eyeSvg() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+function arrowLeftSvg() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>';
+}
+
+function arrowRightSvg() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+}
+
+function escHtml(value) {
+  return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-/* ============================================================
-   SEARCH OVERLAY (navbar search tags)
-============================================================ */
-document.querySelectorAll('.search-tag').forEach(tag => {
-  tag.addEventListener('click', () => {
-    const input = document.getElementById('search-overlay-input');
-    if (input) { input.value = tag.textContent; input.dispatchEvent(new Event('input')); }
-  });
-});
+function escAttr(value) {
+  return escHtml(value);
+}
