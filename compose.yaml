@@ -1,11 +1,14 @@
 services:
-
   postgres:
     image: postgres:17
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   api:
     build: .
@@ -15,10 +18,8 @@ services:
       - .env
     depends_on:
       - postgres
+    volumes:
+      - .:/app
 
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - api
+volumes:
+  postgres_data:
