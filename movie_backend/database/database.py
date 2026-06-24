@@ -13,17 +13,18 @@ from sqlalchemy.orm import declarative_base
 
 load_dotenv()
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 host = os.getenv("DB_HOST")
 port = os.getenv("DB_PORT")
 dbname = os.getenv("DB_NAME")
 user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 
-DATABASE_URL = (
-    f"postgresql+asyncpg://"
-    f"{user}:{password}@{host}:{port}/{dbname}"
-)
+DATABASE_URL = (DATABASE_URL)
+
 print("DATABASE_URL =", DATABASE_URL)
+
 engine = create_async_engine(
     DATABASE_URL,
     echo=True

@@ -1,11 +1,8 @@
 from contextlib import asynccontextmanager
-import os
 import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from scalar_fastapi import get_scalar_api_reference
 
 from movie_backend.database.database import init_db
@@ -42,7 +39,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS — allow local dev servers (Live Server, Docker frontend, Vite, etc.)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -55,7 +51,6 @@ app.add_middleware(
         "http://localhost:8080",
         "https://movie-app-frontend-2o9t.onrender.com",
     ],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,11 +79,6 @@ async def root():
     }
 
 
-@app.get("/app")
-async def app_root():
-    return RedirectResponse(url="/app/login.html")
-
-
 @app.get("/scalar", include_in_schema=False)
 def scalar():
     return get_scalar_api_reference(
@@ -104,6 +94,3 @@ app.include_router(genres)
 app.include_router(admin)
 app.include_router(favorite)
 app.include_router(review)
-
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
-app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
