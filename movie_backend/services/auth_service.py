@@ -44,9 +44,18 @@ async def signup_service(
 
     await db.refresh(new_user)
 
+    token = create_access_token(
+        {
+            "id": new_user.id,
+            "email": new_user.email
+        }
+    )
+
     return {
         "name": new_user.username,
-        "email": new_user.email
+        "email": new_user.email,
+        "access_token": token,
+        "token_type": "bearer"
     }
 
 
