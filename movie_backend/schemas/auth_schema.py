@@ -10,6 +10,8 @@ class SignupRequest(BaseModel):
 class SignupResponse(BaseModel):
     name: str
     email: EmailStr
+    access_token: str
+    token_type: str = "bearer"
 
 
 class LoginRequest(BaseModel):

@@ -78,14 +78,14 @@ const initSignup = () => {
 
       try {
         await apiSignup({
-          name: nameInput.value,
-          email: emailInput.value,
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
           password: passwordInput.value,
         });
-        showToast('Signup successful! Redirecting...', 'success');
+        showToast('Account created! Taking you to your profile...', 'success');
         setTimeout(() => {
-          window.location.href = 'login.html';
-        }, 1500);
+          window.location.href = 'profile.html';
+        }, 1200);
       } catch (err) {
         showToast(err.message || 'Signup failed', 'error');
         if (formError) formError.textContent = err.message;
@@ -97,14 +97,16 @@ const initSignup = () => {
 // Execute when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    initSignup();
     if (localStorage.getItem('auth_token')) {
-      window.location.href = './home.html';
+      window.location.href = 'profile.html';
+      return;
     }
+    initSignup();
   });
 } else {
-  initSignup();
   if (localStorage.getItem('auth_token')) {
-    window.location.href = './home.html';
+    window.location.href = 'profile.html';
+  } else {
+    initSignup();
   }
 }

@@ -57,8 +57,11 @@ const initLogin = () => {
       if (hasError) return;
 
       try {
-        await apiLogin({ email: emailInput.value, password: passwordInput.value });
-        showToast('Login successful!', 'success');
+        await apiLogin({
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+        });
+        showToast('Login successful! Taking you to your profile...', 'success');
         setTimeout(() => {
           window.location.href = 'profile.html';
         }, 1200);
@@ -72,7 +75,17 @@ const initLogin = () => {
 
 // Execute when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLogin);
+  document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('auth_token')) {
+      window.location.href = 'profile.html';
+      return;
+    }
+    initLogin();
+  });
 } else {
-  initLogin();
+  if (localStorage.getItem('auth_token')) {
+    window.location.href = 'profile.html';
+  } else {
+    initLogin();
+  }
 }
