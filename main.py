@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
+import os
 import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from scalar_fastapi import get_scalar_api_reference
 
 from movie_backend.database.database import init_db
@@ -75,8 +78,15 @@ async def log_requests(request: Request, call_next):
 @app.get("/")
 async def root():
     return {
-        "message": "Movie API is running"
+        "message": "Movie API is running",
+        "frontend": "/app/login.html",
+        "docs": "/scalar",
     }
+
+
+@app.get("/app")
+async def app_root():
+    return RedirectResponse(url="/app/login.html")
 
 
 @app.get("/scalar", include_in_schema=False)
@@ -94,3 +104,6 @@ app.include_router(genres)
 app.include_router(admin)
 app.include_router(favorite)
 app.include_router(review)
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
+app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
