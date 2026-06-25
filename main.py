@@ -13,6 +13,8 @@ from movie_backend.routes.genres import router as genres
 from movie_backend.routes.admin import router as admin
 from movie_backend.routes.favorite import router as favorite
 from movie_backend.routes.review import router as review
+from movie_backend.routes.watchlist import router as watchlist
+
 
 # Import models so SQLAlchemy registers them
 from movie_backend.models.user import User
@@ -95,3 +97,4 @@ app.include_router(genres)
 app.include_router(admin)
 app.include_router(favorite)
 app.include_router(review)
+app.include_router(watchlist)
