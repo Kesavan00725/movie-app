@@ -1,43 +1,19 @@
-from langchain_groq import ChatGroq
-from langchain_core.prompts import PromptTemplate
-from langchain_core.messages import HumanMessage,SystemMessage,AIMessage
 from dotenv import load_dotenv
 
-movie = "Nun 2"
-over_all_rating = "8.2"
-review = '''
-1. Absolutely loved the movie! The visuals were stunning, and the story kept me engaged from start to finish.
-2. Great performances by the cast. The emotional scenes felt genuine and memorable.
-3. The movie had an interesting concept, but the pacing felt a bit slow in the middle.
-4. Amazing action sequences and excellent background music. Definitely worth watching on the big screen.
-5. The storyline was predictable, but the characters were well-developed and enjoyable.
-6. I enjoyed the humor and chemistry between the lead actors. It made the movie entertaining throughout.
-7. The first half was fantastic, but the ending felt rushed and could have been better.
-8. A visually beautiful film with strong performances. Some scenes were emotional and really impactful.
-9. Not my favorite movie, but it had a few memorable moments and impressive cinematography.
-10. An overall enjoyable experience with a good balance of action, drama, and suspense. I would recommend it to others.
-'''
+from fastapi import HTTPException
 
-prompt = PromptTemplate.from_template('''
-    User_Review:
-    {review}
-    
-    Overall_rating:
-    {overall_rating}
-    
-    Movie:
-    {movie}
-''')
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import PromptTemplate
+from langchain_groq import ChatGroq
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from movie_backend.models.movie import Movie
+from movie_backend.models.review import Review
 
 load_dotenv()
 
-llm = ChatGroq(
-    model="llama-3.1-8b-instant",
-    temperature=1.9,
-    max_tokens=3000
-)
-
-content = prompt.invoke({"review": review, "overall_rating": over_all_rating, "movie": movie})
 system = SystemMessage(
     content="""
 You are a movie review summarizer.
@@ -48,12 +24,73 @@ Given the movie name, overall rating, and user reviews:
 - Highlight strengths and weaknesses.
 - Do not repeat reviews verbatim.
 - Return only the summary.
+- if review not found use the movie details alone 
 """
 )
 
-human = HumanMessage(content=content.to_string())
+prompt = PromptTemplate.from_template(
+    """
+User Reviews:
+{review}
 
-response = llm.invoke([system]+[human])
+Overall Rating:
+{overall_rating}
 
-print(response.content)
+Movie:
+{movie}
+"""
+)
 
+llm = ChatGroq(
+    model="llama-3.1-8b-instant",
+    temperature=0.2,
+    max_tokens=300,
+)
+
+
+async def summary_review_service(movie_id: int, db: AsyncSession):
+
+    movie_query = select(Movie).where(Movie.id == movie_id)
+    movie_result = await db.execute(movie_query)
+    movie = movie_result.scalar_one_or_none()
+
+    if movie is None:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+
+    review_query = (
+        select(Review)
+        .where(
+            Review.movie_id == movie_id,
+            func.length(Review.content) > 30
+        )
+        .limit(10)
+    )
+
+    review_result = await db.execute(review_query)
+    reviews = review_result.scalars().all()
+
+    if not reviews:
+        content = "No reviews found."
+    else:
+        content = "\n".join(review.content for review in reviews)
+
+    response = prompt.invoke(
+        {
+            "review": content,
+            "overall_rating": movie.rating,
+            "movie": movie.title,
+        }
+    )
+
+    human = HumanMessage(content=response.to_string())
+
+    try:
+        final_response = await llm.ainvoke([system, human])
+        return {"summary_message":final_response.content}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate summary: {str(e)}"
+        )

@@ -29,10 +29,10 @@ class Watchlist(Base):
 
     user = relationship(
         "User",
-        back_populates="watchlist"
+        back_populates="watchlists"
     )
 
     movie = relationship(
         "Movie",
-        back_populates="watchlist"
+        back_populates="watchlists"
     )

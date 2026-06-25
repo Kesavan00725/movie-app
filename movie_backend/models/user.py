@@ -50,7 +50,7 @@ class User(Base):
         cascade="all, delete"
     )
 
-    watchlist = relationship(
+    watchlists = relationship(
         "Watchlist",
         back_populates="user",
         cascade="all, delete"

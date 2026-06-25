@@ -14,12 +14,19 @@ from movie_backend.schemas.response_schema import (
     MessageResponse
 )
 
+from movie_backend.schemas.ai_summary_review_schema import (
+    SummaryRequest,
+    SummaryResponse
+)
+
 from movie_backend.services.review_service import (
     create_review_service,
     update_review_service,
     delete_review_service,
     get_reviews_service
 )
+
+from AI.review_summary import summary_review_service
 
 router = APIRouter(
     prefix="/reviews",
@@ -91,3 +98,13 @@ async def get_reviews(
         movie_id,
         db
     )
+
+@router.get(
+    "/ai_summary_review/{movie_id}",
+    response_model=SummaryResponse
+)
+async def get_reviews_summary(
+        movie_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    return await summary_review_service(movie_id,db)

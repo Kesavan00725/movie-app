@@ -23,8 +23,6 @@ password = os.getenv("DB_PASSWORD")
 
 DATABASE_URL = (DATABASE_URL)
 
-print("DATABASE_URL =", DATABASE_URL)
-
 engine = create_async_engine(
     DATABASE_URL,
     echo=True
