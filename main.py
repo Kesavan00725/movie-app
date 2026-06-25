@@ -19,6 +19,7 @@ from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
 from movie_backend.models.movie import Movie
 from movie_backend.models.movie_image import MovieImage
+from movie_backend.models.watchlist import Watchlist
 
 
 @asynccontextmanager

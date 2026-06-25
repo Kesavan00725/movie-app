@@ -81,7 +81,7 @@ class Movie(Base):
         cascade="all, delete"
     )
 
-    watchlist = relationship(
+    watchlists = relationship(
         "Watchlist",
         back_populates="movie",
         cascade="all, delete"
