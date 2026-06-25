@@ -1,26 +1,35 @@
-# Movie App Backend API Contract
+# Movie API Contract
 
-## Base URL
+**Version:** v1.0
+**OpenAPI:** 3.1.0
 
-### Local Development
+---
 
-```http
-http://localhost:8000
+# Base URL
+
 ```
-
-### Production
-
-```http
-https://your-backend.onrender.com
+http://localhost:8000
 ```
 
 ---
 
 # Authentication
 
-## Signup
+Most endpoints require a JWT access token.
 
-### Endpoint
+**Header**
+
+```http
+Authorization: Bearer <access_token>
+```
+
+---
+
+# Auth APIs
+
+## 1. Register User
+
+**Endpoint**
 
 ```http
 POST /auth/signup
@@ -30,37 +39,51 @@ POST /auth/signup
 
 ```json
 {
-  "name": "Mithul",
-  "email": "mithul@gmail.com",
-  "password": "password123"
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Password@123"
 }
 ```
 
-### Success Response
+### Success Response (200)
 
 ```json
 {
-  "name": "Mithul",
-  "email": "mithul@gmail.com"
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+### Validation Error (422)
+
+```json
+{
+  "detail": [
+    {
+      "loc": [
+        "body",
+        "email"
+      ],
+      "msg": "value is not a valid email address"
+    }
+  ]
 }
 ```
 
 ---
 
-## Login
-
-### Endpoint
+## 2. Login
 
 ```http
 POST /auth/login
 ```
 
-### Request Body
+### Request
 
 ```json
 {
-  "email": "mithul@gmail.com",
-  "password": "password123"
+  "email": "john@example.com",
+  "password": "Password@123"
 }
 ```
 
@@ -68,57 +91,31 @@ POST /auth/login
 
 ```json
 {
-  "access_token": "jwt_token",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI...",
   "token_type": "bearer"
 }
 ```
 
 ---
 
-## Logout
-
-### Endpoint
-
-```http
-POST /auth/logout
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
-### Success Response
-
-```json
-{
-  "message": "Logged out successfully"
-}
-```
-
----
-
-## Get Current User
-
-### Endpoint
+## 3. Get Current User
 
 ```http
 GET /auth/me
 ```
 
-### Headers
+### Header
 
 ```http
-Authorization: Bearer <token>
+Authorization: Bearer eyJhbGc...
 ```
 
-### Success Response
+### Response
 
 ```json
 {
-  "name": "Mithul",
-  "email": "mithul@gmail.com"
+  "name": "John Doe",
+  "email": "john@example.com"
 }
 ```
 
@@ -126,12 +123,10 @@ Authorization: Bearer <token>
 
 # Movies
 
-## Get Movies
-
-### Endpoint
+## Get All Movies
 
 ```http
-GET /movies?page=1&limit=10
+GET /movies/
 ```
 
 ### Response
@@ -140,117 +135,39 @@ GET /movies?page=1&limit=10
 [
   {
     "id": 1,
+    "title": "Inception",
+    "release_year": 2010,
+    "genre": "Sci-Fi",
+    "rating": 8.8
+  },
+  {
+    "id": 2,
     "title": "Interstellar",
-    "description": "Space exploration movie",
-    "rating": 8.9,
-    "poster_url": "https://...",
-    "genre": {},
-    "images": []
+    "release_year": 2014,
+    "genre": "Sci-Fi",
+    "rating": 8.7
   }
 ]
 ```
 
 ---
 
-## Get Movie By Id
-
-### Endpoint
+## Get Movie By ID
 
 ```http
-GET /movies/{movie_id}
-```
-
----
-
-## Search Movies
-
-### Endpoint
-
-```http
-GET /movies/search?q=interstellar&page=1&limit=10
-```
-
----
-
-## Filter Movies
-
-### Endpoint
-
-```http
-GET /movies/filter?genre=Action&language=English&year=2024&page=1&limit=10
-```
-
----
-
-# Genres
-
-## Get Genres
-
-### Endpoint
-
-```http
-GET /genres
+GET /movies/1
 ```
 
 ### Response
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Action"
-  }
-]
-```
-
----
-
-# Favorites
-
-## Add Favorite
-
-### Endpoint
-
-```http
-POST /favorites/{movie_id}
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
----
-
-## Remove Favorite
-
-### Endpoint
-
-```http
-DELETE /favorites/{movie_id}
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
----
-
-## Get Favorites
-
-### Endpoint
-
-```http
-GET /favorites
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
+{
+  "id": 1,
+  "title": "Inception",
+  "description": "A thief enters people's dreams to steal secrets.",
+  "genre": "Sci-Fi",
+  "rating": 8.8
+}
 ```
 
 ---
@@ -259,126 +176,127 @@ Authorization: Bearer <token>
 
 ## Create Review
 
-### Endpoint
-
 ```http
-POST /reviews/{movie_id}
+POST /reviews/1
 ```
 
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
-### Request Body
+### Request
 
 ```json
 {
   "rating": 5,
-  "content": "Amazing movie"
+  "review": "Amazing movie with an incredible storyline."
+}
+```
+
+### Response
+
+```json
+{
+  "message": "Review added successfully."
 }
 ```
 
 ---
 
-## Get Reviews
-
-### Endpoint
+## AI Review Summary
 
 ```http
-GET /reviews/{movie_id}
+GET /reviews/ai_summary_review/1
 ```
 
----
-
-## Update Review
-
-### Endpoint
-
-```http
-PATCH /reviews/{review_id}
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
----
-
-## Delete Review
-
-### Endpoint
-
-```http
-DELETE /reviews/{review_id}
-```
-
-### Headers
-
-```http
-Authorization: Bearer <token>
-```
-
----
-
-# Admin APIs
-
-> Requires Admin Role
-
-### Movies
-
-```http
-POST   /admin/movies
-PATCH  /admin/movies/{movie_id}
-DELETE /admin/movies/{movie_id}
-```
-
-### Genres
-
-```http
-POST   /admin/genres
-PATCH  /admin/genres/{genre_id}
-DELETE /admin/genres/{genre_id}
-```
-
-### Movie Images
-
-```http
-POST   /admin/movies/{movie_id}/images
-DELETE /admin/movie-images/{image_id}
-```
-
----
-
-# Common Error Responses
-
-## Unauthorized
+### Response
 
 ```json
 {
-  "detail": "Invalid token"
+  "summary_message": "Inception is widely praised for its mind-bending story, outstanding visuals, and Christopher Nolan's direction. Most viewers recommend watching it more than once to fully appreciate its complex narrative."
 }
 ```
 
-## Not Found
+---
+
+# Favorites
+
+## Add to Favorites
+
+```http
+POST /favorites/add/1
+```
+
+### Response
 
 ```json
 {
-  "detail": "Movie not found"
+  "message": "Movie added to favorites."
 }
 ```
 
-## Validation Error
+---
+
+## Get Favorites
+
+```http
+GET /favorites/
+```
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "movie_id": 5
+  },
+  {
+    "id": 2,
+    "movie_id": 9
+  }
+]
+```
+
+---
+
+# Watchlist
+
+## Add Movie
+
+```http
+POST /watchlist/add/3
+```
+
+### Response
 
 ```json
 {
-  "detail": [
-    {
-      "msg": "Field required"
-    }
-  ]
+  "message": "Movie added to watchlist."
+}
+```
+
+---
+
+# Admin
+
+## Create Movie
+
+```http
+POST /admin/movies
+```
+
+### Request
+
+```json
+{
+  "title": "The Batman",
+  "description": "Crime thriller",
+  "release_year": 2022,
+  "genre_id": 2
+}
+```
+
+### Response
+
+```json
+{
+  "message": "Movie created successfully."
 }
 ```
