@@ -1,10 +1,7 @@
-from datetime import datetime
-
 from sqlalchemy import (
     Column,
     Integer,
-    ForeignKey,
-    DateTime
+    ForeignKey
 )
 from sqlalchemy.orm import relationship
 

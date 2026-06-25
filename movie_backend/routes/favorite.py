@@ -17,6 +17,8 @@ from movie_backend.services.favorite_service import (
     remove_favorite_service,
     get_favorites_service
 )
+from movie_backend.schemas.favorite_schema import FavoriteResponse
+from typing import List
 
 router = APIRouter(
     prefix="/favorites",
@@ -58,7 +60,7 @@ async def remove_favorite(
 
 @router.get(
     "/",
-    response_model=list[FavoriteResponse]
+    response_model=List[FavoriteResponse]
 )
 async def get_favorites(
     db: AsyncSession = Depends(get_db),
