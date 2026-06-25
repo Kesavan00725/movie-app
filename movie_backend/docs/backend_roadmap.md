@@ -20,7 +20,7 @@
 
 ## Version 3 🚀
 
-* AI Review Summary
+* AI Review Summary ✅
 * Review Sentiment Analysis
 * Movie Insights
 
@@ -32,7 +32,7 @@
 
 ## Version 5 🚀
 
-* Watchlist
+* Watchlist ✅
 * Recently Viewed
 * User Profile
 * Movie History
