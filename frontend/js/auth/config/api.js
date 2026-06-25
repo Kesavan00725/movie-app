@@ -1,7 +1,9 @@
-// config/api.js — Shared API base URL for auth/profile pages
+// config/api.js — Single source of truth for API base URL
 
-export const API_BASE =
-  window.location.protocol !== 'file:' &&
-  (window.location.port === '8000' || window.location.port === '')
-    ? window.location.origin
-    : 'http://127.0.0.1:8000';
+const isLocal =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1';
+
+export const API_BASE = isLocal
+  ? 'http://127.0.0.1:8000'
+  : 'https://movie-app-qhzc.onrender.com';

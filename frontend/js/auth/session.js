@@ -1,10 +1,14 @@
-// session.js — Token helpers for profile and auth pages
-// Uses the same TOKEN_KEY as login.js ("auth_token")
+// session.js — Auth state shared across all pages
+// Import this wherever you need token access or auth guard
 
 const TOKEN_KEY = 'auth_token';
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setToken(token) {
+  localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken() {
@@ -13,4 +17,12 @@ export function clearToken() {
 
 export function isLoggedIn() {
   return Boolean(localStorage.getItem(TOKEN_KEY));
+}
+
+// Call this at the top of any protected page (profile, watchlist, etc.)
+// Instantly redirects to login if no token is found
+export function requireAuth() {
+  if (!localStorage.getItem(TOKEN_KEY)) {
+    window.location.href = 'login.html';
+  }
 }

@@ -1,40 +1,88 @@
-// signup.js - Frontend registration with backend API
+// auth/signup.js — CineVerse Signup
 import { showToast } from "../components/toast.js";
+import { API_BASE } from "../config/api.js";
+import { setToken, isLoggedIn } from "./session.js";
 
-// Backend base URL (FastAPI runs on port 8000)
-const API_BASE_URL =
-  window.location.protocol !== "file:" &&
-  (window.location.port === "8000" || window.location.port === "")
-    ? window.location.origin
-    : "http://127.0.0.1:8000";
+// ── Redirect if already logged in ─────────────
+if (isLoggedIn()) {
+  window.location.href = "profile.html";
+}
 
-const TOKEN_KEY = "auth_token";
-
-/**
- * POST /auth/signup
- * Backend expects: { name, email, password }
- * Backend returns: { name, email, access_token, token_type }
- */
-async function signupUser({ name, email, password }) {
-  let response;
-
-  try {
-    response = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
+// ── Password toggle ────────────────────────────
+document.querySelectorAll(".inputForm").forEach((container) => {
+  const input     = container.querySelector("input");
+  const toggleBtn = container.querySelector(".password-toggle-btn");
+  if (input && toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      toggleBtn.style.color = isPassword ? "var(--primary-color)" : "";
     });
-  } catch {
-    throw new Error(
-      "Cannot connect to server. Start backend: uvicorn main:app --reload --port 8000"
-    );
   }
+});
+
+// ── DOM refs ───────────────────────────────────
+const form            = document.getElementById("signup-form");
+const nameInput       = document.getElementById("full-name");
+const emailInput      = document.getElementById("email");
+const passwordInput   = document.getElementById("password");
+const confirmInput    = document.getElementById("confirm-password");
+const nameError       = document.getElementById("full-name-error");
+const emailError      = document.getElementById("email-error");
+const passwordError   = document.getElementById("password-error");
+const confirmError    = document.getElementById("confirm-password-error");
+const formError       = document.getElementById("form-error");
+const submitBtn       = document.getElementById("signup-submit");
+
+// ── Validation ─────────────────────────────────
+function validate() {
+  let valid = true;
+
+  nameError.textContent    = "";
+  emailError.textContent   = "";
+  passwordError.textContent = "";
+  confirmError.textContent = "";
+  formError.textContent    = "";
+
+  if (!nameInput.value.trim()) {
+    nameError.textContent = "Full name is required.";
+    valid = false;
+  }
+
+  if (!emailInput.value.trim()) {
+    emailError.textContent = "Email is required.";
+    valid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+    emailError.textContent = "Enter a valid email address.";
+    valid = false;
+  }
+
+  if (!passwordInput.value) {
+    passwordError.textContent = "Password is required.";
+    valid = false;
+  } else if (passwordInput.value.length < 8) {
+    passwordError.textContent = "Password must be at least 8 characters.";
+    valid = false;
+  }
+
+  if (!confirmInput.value) {
+    confirmError.textContent = "Please confirm your password.";
+    valid = false;
+  } else if (passwordInput.value !== confirmInput.value) {
+    confirmError.textContent = "Passwords do not match.";
+    valid = false;
+  }
+
+  return valid;
+}
+
+// ── API call ───────────────────────────────────
+async function signupUser(name, email, password) {
+  const response = await fetch(`${API_BASE}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
 
   let data;
   try {
@@ -49,131 +97,44 @@ async function signupUser({ name, email, password }) {
       typeof detail === "string"
         ? detail
         : Array.isArray(detail)
-          ? detail.map((item) => item.msg || String(item)).join(", ")
-          : "Signup failed";
+          ? detail.map((i) => i.msg || String(i)).join(", ")
+          : "Signup failed. Please try again.";
     throw new Error(message);
-  }
-
-  if (data.access_token) {
-    localStorage.setItem(TOKEN_KEY, data.access_token);
   }
 
   return data;
 }
 
-const initSignup = () => {
-  const inputForms = document.querySelectorAll(".inputForm");
-  inputForms.forEach((container) => {
-    const input = container.querySelector("input");
-    const toggleBtn = container.querySelector(".password-toggle-btn");
-    if (input && toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        if (input.type === "password") {
-          input.type = "text";
-          toggleBtn.style.color = "var(--primary-color)";
-        } else {
-          input.type = "password";
-          toggleBtn.style.color = "";
-        }
-      });
+// ── Submit handler ─────────────────────────────
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+
+  submitBtn.disabled    = true;
+  submitBtn.textContent = "Creating account...";
+
+  try {
+    const data = await signupUser(
+      nameInput.value.trim(),
+      emailInput.value.trim(),
+      passwordInput.value
+    );
+
+    if (data.access_token) {
+      setToken(data.access_token);
     }
-  });
 
-  const form = document.getElementById("signup-form");
-  const nameInput = document.getElementById("full-name");
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-  const confirmInput = document.getElementById("confirm-password");
-
-  const nameError = document.getElementById("full-name-error");
-  const emailError = document.getElementById("email-error");
-  const passwordError = document.getElementById("password-error");
-  const confirmError = document.getElementById("confirm-password-error");
-  const formError = document.getElementById("form-error");
-  const submitBtn = document.getElementById("signup-submit");
-
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (nameError) nameError.textContent = "";
-      if (emailError) emailError.textContent = "";
-      if (passwordError) passwordError.textContent = "";
-      if (confirmError) confirmError.textContent = "";
-      if (formError) formError.textContent = "";
-
-      let hasError = false;
-
-      if (!nameInput.value.trim()) {
-        if (nameError) nameError.textContent = "Full name is required.";
-        hasError = true;
-      }
-      if (!emailInput.value.trim()) {
-        if (emailError) emailError.textContent = "Email is required.";
-        hasError = true;
-      }
-      if (!passwordInput.value.trim()) {
-        if (passwordError) passwordError.textContent = "Password is required.";
-        hasError = true;
-      } else if (passwordInput.value.length < 8) {
-        if (passwordError) passwordError.textContent = "Password must be at least 8 characters.";
-        hasError = true;
-      }
-      if (!confirmInput.value.trim()) {
-        if (confirmError) confirmError.textContent = "Please confirm your password.";
-        hasError = true;
-      } else if (passwordInput.value !== confirmInput.value) {
-        if (confirmError) confirmError.textContent = "Passwords do not match.";
-        hasError = true;
-      }
-
-      if (hasError) return;
-
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Signing up...";
-      }
-
-      try {
-        await signupUser({
-          name: nameInput.value.trim(),
-          email: emailInput.value.trim(),
-          password: passwordInput.value,
-        });
-
-        showToast("Account created! Taking you to your profile...", "success");
-        setTimeout(() => {
-          window.location.href = "profile.html";
-        }, 1200);
-      } catch (err) {
-        const message =
-          window.location.protocol === "file:"
-            ? "Open http://127.0.0.1:8000/app/signup.html (do not open the HTML file directly)."
-            : err.message || "Signup failed";
-        showToast(message, "error");
-        if (formError) formError.textContent = message;
-      } finally {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Sign Up";
-        }
-      }
-    });
-  }
-};
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem(TOKEN_KEY)) {
+    showToast("Account created! Taking you to your profile...", "success");
+    setTimeout(() => {
       window.location.href = "profile.html";
-      return;
-    }
-    initSignup();
-  });
-} else {
-  if (localStorage.getItem(TOKEN_KEY)) {
-    window.location.href = "profile.html";
-  } else {
-    initSignup();
+    }, 1200);
+
+  } catch (err) {
+    const message = err.message || "Signup failed. Please try again.";
+    formError.textContent = message;
+    showToast(message, "error");
+  } finally {
+    submitBtn.disabled    = false;
+    submitBtn.textContent = "Sign Up";
   }
-}
+});
