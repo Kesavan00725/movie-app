@@ -5,5 +5,5 @@
 - **Raghul** – Backend Developer
 
 ### Frontend Team
-- **Kesavan** – Frontend Lead
-- **Logesh** – Frontend Developer
+- **Kesavan** – Frontend Developer
+- **Logesh** –  Frontend Lead
