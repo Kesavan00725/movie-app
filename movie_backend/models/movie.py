@@ -86,3 +86,4 @@ class Movie(Base):
         back_populates="movie",
         cascade="all, delete"
     )
+    

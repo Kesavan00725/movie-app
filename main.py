@@ -14,6 +14,9 @@ from movie_backend.routes.admin import router as admin
 from movie_backend.routes.favorite import router as favorite
 from movie_backend.routes.review import router as review
 from movie_backend.routes.watchlist import router as watchlist
+from movie_backend.routes.profile import router as profile
+
+
 
 
 # Import models so SQLAlchemy registers them
@@ -22,7 +25,7 @@ from movie_backend.models.genre import Genre
 from movie_backend.models.movie import Movie
 from movie_backend.models.movie_image import MovieImage
 from movie_backend.models.watchlist import Watchlist
-
+from movie_backend.models.profile import Profile
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -98,3 +101,4 @@ app.include_router(admin)
 app.include_router(favorite)
 app.include_router(review)
 app.include_router(watchlist)
+app.include_router(profile)
