@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Genres — CineVerse Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ── Top Bar ── -->
+  <header class="admin-topbar">
+    <a href="index.html" class="admin-topbar-brand">
+      <span class="brand-name">CineVerse</span>
+      <span class="brand-badge">ADMIN</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link">Dashboard</a>
+      <a href="manage-movies.html"   class="admin-nav-link">Movies</a>
+      <a href="manage-genres.html"   class="admin-nav-link active">Genres</a>
+    </nav>
+    <div class="admin-topbar-right">
+      <a href="home.html" class="admin-back-link">← Back to Site</a>
+    </div>
+  </header>
+
+  <main class="admin-page">
+
+    <div class="admin-page-header">
+      <div>
+        <h1 class="admin-page-title">Manage Genres</h1>
+        <p class="admin-page-subtitle" id="genres-count-label">Loading...</p>
+      </div>
+      <button class="btn btn-gold" onclick="openAddGenreModal()">+ Add Genre</button>
+    </div>
+
+    <!-- ── Genre Table ── -->
+    <div class="table-card">
+      <div id="genres-table-body">
+        <div class="loading-spinner">
+          <div class="spinner"></div> Loading genres...
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══ ADD GENRE MODAL ══ -->
+  <div class="modal-overlay" id="add-genre-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Genre</h2>
+        <button class="modal-close" onclick="closeModal('add-genre-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Genre Name *</label>
+          <input type="text" id="add-genre-name" class="form-control" placeholder="e.g. Action, Comedy...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('add-genre-modal')">Cancel</button>
+        <button class="btn btn-gold" id="add-genre-btn" onclick="submitAddGenre()">Add Genre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EDIT GENRE MODAL ══ -->
+  <div class="modal-overlay" id="edit-genre-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Genre</h2>
+        <button class="modal-close" onclick="closeModal('edit-genre-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-genre-id">
+        <div class="form-group">
+          <label>Genre Name *</label>
+          <input type="text" id="edit-genre-name" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('edit-genre-modal')">Cancel</button>
+        <button class="btn btn-gold" id="edit-genre-btn" onclick="submitEditGenre()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DELETE CONFIRM MODAL ══ -->
+  <div class="modal-overlay" id="delete-genre-modal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete Genre</h2>
+        <button class="modal-close" onclick="closeModal('delete-genre-modal')">×</button>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-icon">🗑️</div>
+        <h3>Are you sure?</h3>
+        <p>You are about to delete genre <strong id="delete-genre-name-label"></strong>. Movies assigned to this genre may be affected.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-genre-modal')">Cancel</button>
+        <button class="btn btn-danger" id="delete-genre-btn" onclick="submitDeleteGenre()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cv-api.js"></script>
+  <script src="js/manage-genres.js"></script>
+
+</body>
+</html>

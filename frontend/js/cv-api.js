@@ -245,3 +245,93 @@ function cvToast(message, type = 'success') {
 async function cvInitUserLists() {
   await Promise.all([CV_Favorites.load(), CV_Watchlist.load()]);
 }
+
+// =============================================
+// ADD THESE TO THE BOTTOM OF cv-api.js
+// =============================================
+
+// ── cvAuthPatch ───────────────────────────────
+async function cvAuthPatch(endpoint, data) {
+  var token = cvGetToken();
+  var res = await fetch('https://movie-app-qhzc.onrender.com' + endpoint, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(data)
+  });
+  return res;
+}
+
+// ── cvAuthPostJSON ────────────────────────────
+async function cvAuthPostJSON(endpoint, data) {
+  var token = cvGetToken();
+  var res = await fetch('https://movie-app-qhzc.onrender.com' + endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(data)
+  });
+  return res;
+}
+
+// ── CV_Admin singleton ────────────────────────
+var CV_Admin = {
+
+  getMovies: async function(page, limit) {
+  page = page || 1;
+  limit = limit || 10;
+
+  return await cvAuthGet(
+    '/movies/?page=' + page + '&limit=' + limit
+  );
+},
+
+getGenres: async function() {
+  return await cvAuthGet('/genres/');
+},
+
+  createMovie: async function(movie) {
+    return cvAuthPostJSON('/admin/movies', movie);
+  },
+
+  updateMovie: async function(id, data) {
+    return cvAuthPatch('/admin/movies/' + id, data);
+  },
+
+  deleteMovie: async function(id) {
+    return cvAuthDelete('/admin/movies/' + id);
+  },
+
+  createGenre: async function(name) {
+    return cvAuthPostJSON('/admin/genres', { name: name });
+  },
+
+  updateGenre: async function(id, name) {
+    return cvAuthPatch('/admin/genres/' + id, { name: name });
+  },
+
+  deleteGenre: async function(id) {
+    return cvAuthDelete('/admin/genres/' + id);
+  },
+
+  uploadMovieImage: async function(movieId, file) {
+    var token = cvGetToken();
+    var formData = new FormData();
+    formData.append('image', file);
+    var res = await fetch('https://movie-app-qhzc.onrender.com/admin/movies/' + movieId + '/images', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    return res;
+  },
+
+  deleteMovieImage: async function(imageId) {
+    return cvAuthDelete('/admin/movie-images/' + imageId);
+  }
+
+};

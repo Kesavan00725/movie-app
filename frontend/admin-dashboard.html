@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — CineVerse</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ── Top Bar ── -->
+  <header class="admin-topbar">
+    <a href="index.html" class="admin-topbar-brand">
+      <span class="brand-name">CineVerse</span>
+      <span class="brand-badge">ADMIN</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link active">Dashboard</a>
+      <a href="manage-movies.html"   class="admin-nav-link">Movies</a>
+      <a href="manage-genres.html"   class="admin-nav-link">Genres</a>
+    </nav>
+    <div class="admin-topbar-right">
+      <a href="home.html" class="admin-back-link">← Back to Site</a>
+    </div>
+  </header>
+
+  <main class="admin-page">
+
+    <!-- ── Page Header ── -->
+    <div class="admin-page-header">
+      <div>
+        <h1 class="admin-page-title">Dashboard</h1>
+        <p class="admin-page-subtitle">Overview of your CineVerse platform</p>
+      </div>
+    </div>
+
+    <!-- ── Stat Cards ── -->
+    <div class="stat-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon">🎬</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-movies">—</div>
+          <div class="stat-label">Total Movies</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🎭</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-genres">—</div>
+          <div class="stat-label">Total Genres</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon coming-soon">👥</div>
+        <div class="stat-info">
+          <div class="stat-value coming-soon">Coming Soon</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon coming-soon">⭐</div>
+        <div class="stat-info">
+          <div class="stat-value coming-soon">Coming Soon</div>
+          <div class="stat-label">Total Reviews</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Quick Links ── -->
+    <div class="admin-page-header" style="margin-top: 8px;">
+      <div>
+        <h2 class="admin-page-title" style="font-size:18px;">Quick Actions</h2>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a href="manage-movies.html" class="quick-card">
+        <div class="quick-card-icon">🎬</div>
+        <div>
+          <h3>Manage Movies</h3>
+          <p>Add, edit, delete movies and upload posters</p>
+        </div>
+      </a>
+      <a href="manage-genres.html" class="quick-card">
+        <div class="quick-card-icon">🎭</div>
+        <div>
+          <h3>Manage Genres</h3>
+          <p>Create and manage movie categories</p>
+        </div>
+      </a>
+    </div>
+
+  </main>
+
+  <script src="js/cv-api.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+
+</body>
+</html>

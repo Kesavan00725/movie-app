@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Movies — CineVerse Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ── Top Bar ── -->
+  <header class="admin-topbar">
+    <a href="index.html" class="admin-topbar-brand">
+      <span class="brand-name">CineVerse</span>
+      <span class="brand-badge">ADMIN</span>
+    </a>
+    <nav class="admin-nav">
+      <a href="admin-dashboard.html" class="admin-nav-link">Dashboard</a>
+      <a href="manage-movies.html"   class="admin-nav-link active">Movies</a>
+      <a href="manage-genres.html"   class="admin-nav-link">Genres</a>
+    </nav>
+    <div class="admin-topbar-right">
+      <a href="home.html" class="admin-back-link">← Back to Site</a>
+    </div>
+  </header>
+
+  <main class="admin-page">
+
+    <div class="admin-page-header">
+      <div>
+        <h1 class="admin-page-title">Manage Movies</h1>
+        <p class="admin-page-subtitle" id="movies-count-label">Loading...</p>
+      </div>
+      <button class="btn btn-gold" onclick="openAddModal()">+ Add Movie</button>
+    </div>
+
+    <!-- ── Movie Table ── -->
+    <div class="table-card">
+      <div id="movies-table-body">
+        <div class="loading-spinner">
+          <div class="spinner"></div> Loading movies...
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination" style="display:none">
+        <span id="pagination-info">Page 1</span>
+        <div class="pagination-btns">
+          <button class="btn btn-ghost btn-sm" id="prev-btn" onclick="changePage(-1)" disabled>← Prev</button>
+          <button class="btn btn-ghost btn-sm" id="next-btn" onclick="changePage(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══ ADD MOVIE MODAL ══ -->
+  <div class="modal-overlay" id="add-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Movie</h2>
+        <button class="modal-close" onclick="closeModal('add-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Title *</label>
+            <input type="text" id="add-title" class="form-control" placeholder="Movie title">
+          </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="add-description" class="form-control" placeholder="Movie description"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Release Year</label>
+            <input type="number" id="add-year" class="form-control" placeholder="2024" min="1900" max="2100">
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="add-duration" class="form-control" placeholder="120">
+          </div>
+          <div class="form-group">
+            <label>Language</label>
+            <input type="text" id="add-language" class="form-control" placeholder="English">
+          </div>
+          <div class="form-group">
+            <label>Rating (0-10)</label>
+            <input type="number" id="add-rating" class="form-control" placeholder="7.5" step="0.1" min="0" max="10">
+          </div>
+          <div class="form-group full">
+            <label>Poster URL</label>
+            <input type="url" id="add-poster" class="form-control" placeholder="https://...">
+          </div>
+          <div class="form-group full">
+            <label>Trailer URL</label>
+            <input type="url" id="add-trailer" class="form-control" placeholder="https://...">
+          </div>
+          <div class="form-group full">
+            <label>Genre</label>
+            <select id="add-genre" class="form-control">
+              <option value="">Select genre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-gold" id="add-submit-btn" onclick="submitAddMovie()">Add Movie</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EDIT MOVIE MODAL ══ -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Movie</h2>
+        <button class="modal-close" onclick="closeModal('edit-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-movie-id">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Title *</label>
+            <input type="text" id="edit-title" class="form-control">
+          </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="edit-description" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Release Year</label>
+            <input type="number" id="edit-year" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="edit-duration" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Language</label>
+            <input type="text" id="edit-language" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Rating (0-10)</label>
+            <input type="number" id="edit-rating" class="form-control" step="0.1" min="0" max="10">
+          </div>
+          <div class="form-group full">
+            <label>Poster URL</label>
+            <input type="url" id="edit-poster" class="form-control">
+          </div>
+          <div class="form-group full">
+            <label>Trailer URL</label>
+            <input type="url" id="edit-trailer" class="form-control">
+          </div>
+          <div class="form-group full">
+            <label>Genre</label>
+            <select id="edit-genre" class="form-control"></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('edit-modal')">Cancel</button>
+        <button class="btn btn-gold" id="edit-submit-btn" onclick="submitEditMovie()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DELETE CONFIRM MODAL ══ -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete Movie</h2>
+        <button class="modal-close" onclick="closeModal('delete-modal')">×</button>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-icon">🗑️</div>
+        <h3>Are you sure?</h3>
+        <p>You are about to delete <strong id="delete-movie-title"></strong>. This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+        <button class="btn btn-danger" id="delete-submit-btn" onclick="submitDeleteMovie()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ UPLOAD IMAGE MODAL ══ -->
+  <div class="modal-overlay" id="images-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Movie Images</h2>
+        <button class="modal-close" onclick="closeModal('images-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="images-movie-id">
+        <div class="image-grid" id="images-grid">
+          <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+        <div class="upload-area" onclick="document.getElementById('image-file-input').click()">
+          <div style="font-size:32px">📁</div>
+          <p>Click to upload an image</p>
+          <p style="font-size:12px; margin-top:4px;">JPG, PNG, WEBP supported</p>
+        </div>
+        <input type="file" id="image-file-input" accept="image/*" style="display:none" onchange="uploadImage(this)">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('images-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cv-api.js"></script>
+  <script src="js/manage-movies.js"></script>
+
+</body>
+</html>
