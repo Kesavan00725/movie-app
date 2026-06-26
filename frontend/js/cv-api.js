@@ -50,45 +50,54 @@ var CV_Admin = {
     return await res.json();
   },
 
-  createMovie: async function(payload) {
-    return await fetch(`${CV_BASE}/movies/`, {
-      method: 'POST',
-      headers: { ...cvAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+createMovie: async function(payload) {
+    return await fetch(`${CV_BASE}/admin/movies`, {
+        method: 'POST',
+        headers: {
+            ...cvAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
     });
-  },
+},
 
-  updateMovie: async function(movieId, payload) {
-    return await fetch(`${CV_BASE}/movies/${movieId}`, {
-      method: 'PUT',
-      headers: { ...cvAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+ updateMovie: async function(movieId, payload) {
+    return await fetch(`${CV_BASE}/admin/movies/${movieId}`, {
+        method: 'PATCH',
+        headers: {
+            ...cvAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
     });
-  },
+},
 
   deleteMovie: async function(movieId) {
-    return await fetch(`${CV_BASE}/movies/${movieId}`, {
-      method: 'DELETE',
-      headers: cvAuthHeaders()
+    return await fetch(`${CV_BASE}/admin/movies/${movieId}`, {
+        method: 'DELETE',
+        headers: cvAuthHeaders()
     });
-  },
+},
 
   uploadMovieImage: async function(movieId, file) {
     const formData = new FormData();
-    formData.append('file', file);
-    return await fetch(`${CV_BASE}/movies/${movieId}/images`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${cvToken()}` },
-      body: formData
-    });
-  },
+    formData.append('image', file);
 
-  deleteMovieImage: async function(imageId) {
-    return await fetch(`${CV_BASE}/movies/images/${imageId}`, {
-      method: 'DELETE',
-      headers: cvAuthHeaders()
+    return await fetch(`${CV_BASE}/admin/movies/${movieId}/images`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${cvToken()}`
+        },
+        body: formData
     });
-  },
+},
+
+ deleteMovieImage: async function(imageId) {
+    return await fetch(`${CV_BASE}/admin/movie-images/${imageId}`, {
+        method: 'DELETE',
+        headers: cvAuthHeaders()
+    });
+},
 
   /* Genres */
   getGenres: async function() {
@@ -98,28 +107,34 @@ var CV_Admin = {
     return await res.json();
   },
 
-  createGenre: async function(name) {
-    return await fetch(`${CV_BASE}/genres/`, {
-      method: 'POST',
-      headers: { ...cvAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+ createGenre: async function(name) {
+    return await fetch(`${CV_BASE}/admin/genres`, {
+        method: 'POST',
+        headers: {
+            ...cvAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name })
     });
-  },
+},
 
-  updateGenre: async function(genreId, name) {
-    return await fetch(`${CV_BASE}/genres/${genreId}`, {
-      method: 'PUT',
-      headers: { ...cvAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+ updateGenre: async function(genreId, name) {
+    return await fetch(`${CV_BASE}/admin/genres/${genreId}`, {
+        method: 'PATCH',
+        headers: {
+            ...cvAuthHeaders(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name })
     });
-  },
+},
 
-  deleteGenre: async function(genreId) {
-    return await fetch(`${CV_BASE}/genres/${genreId}`, {
-      method: 'DELETE',
-      headers: cvAuthHeaders()
+ deleteGenre: async function(genreId) {
+    return await fetch(`${CV_BASE}/admin/genres/${genreId}`, {
+        method: 'DELETE',
+        headers: cvAuthHeaders()
     });
-  },
+},
 
   /* Reviews */
   getReviews: async function(movieId) {
