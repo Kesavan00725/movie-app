@@ -25,34 +25,6 @@ router = APIRouter(
     "/",
     response_model=ProfileResponse,
     status_code=201,
-    openapi_extra={
-        "requestBody": {
-            "required": True,
-            "content": {
-                "multipart/form-data": {
-                    "schema": {
-                        "type": "object",
-                        "required": ["photo"],
-                        "properties": {
-                            "preferred_language": {
-                                "type": "string",
-                                "title": "Preferred Language"
-                            },
-                            "favorite_movie": {
-                                "type": "string",
-                                "title": "Favorite Movie"
-                            },
-                            "photo": {
-                                "type": "string",
-                                "format": "binary",
-                                "title": "Photo"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 )
 async def create_profile(
     preferred_language: Optional[str] = Form(None),
@@ -83,33 +55,7 @@ async def get_profile(
 @router.patch(
     "/",
     response_model=ProfileResponse,
-    openapi_extra={
-        "requestBody": {
-            "required": False,
-            "content": {
-                "multipart/form-data": {
-                    "schema": {
-                        "type": "object",
-                        "properties": {
-                            "preferred_language": {
-                                "type": "string",
-                                "title": "Preferred Language"
-                            },
-                            "favorite_movie": {
-                                "type": "string",
-                                "title": "Favorite Movie"
-                            },
-                            "photo": {
-                                "type": "string",
-                                "format": "binary",
-                                "title": "Photo"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
 )
 async def update_profile(
     preferred_language: Optional[str] = Form(None),

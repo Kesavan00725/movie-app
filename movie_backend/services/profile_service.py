@@ -1,5 +1,5 @@
 import os
-import uuid
+
 
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,24 +7,11 @@ from sqlalchemy.future import select
 
 from movie_backend.models.profile import Profile
 from movie_backend.schemas.profile_schema import ProfileCreate, ProfileUpdate
+from movie_backend.util.helpers import _save_file
 
 UPLOAD_DIR = "uploads/profile_pictures"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-
-def _save_file(file: UploadFile) -> str:
-    allowed_types = {"image/jpeg", "image/png", "image/webp"}
-    if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only JPEG, PNG, and WEBP images are allowed"
-        )
-    ext = file.filename.split(".")[-1]
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
-    return file_path
 
 
 async def create_profile_service(
