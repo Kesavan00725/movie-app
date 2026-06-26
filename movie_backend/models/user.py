@@ -55,3 +55,5 @@ class User(Base):
         back_populates="user",
         cascade="all, delete"
     )
+    profile = relationship("Profile", back_populates="user",cascade="all, delete", uselist=False)
+    
