@@ -83,8 +83,7 @@ async def log_requests(request: Request, call_next):
 async def root():
     return {
         "message": "Movie API is running",
-        "frontend": "/app/login.html",
-        "docs": "/scalar",
+        "docs": "/scalar"
     }
 
 
@@ -96,7 +95,7 @@ def scalar():
     )
 
 
-# Routers
+
 app.include_router(auth)
 app.include_router(movies)
 app.include_router(genres)
