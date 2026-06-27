@@ -55,12 +55,15 @@
 ## Version 7 🚀
 
 * Subscription Plans
+* Logs
 * Payment Gateway Integration (Stripe / Razorpay)
 * Premium Features(All AI feature except AI Review Summary)
 * Change Password
 * Redis Caching
 * Background Tasks
 * Logging
-* CI/CD Pipeline
+* testing
+* CD Pipeline
+* CI Pipeline
 * AWS Deployment
 * Monitoring
