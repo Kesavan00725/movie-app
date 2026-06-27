@@ -51,7 +51,7 @@
 
 ---
 
-## Version 7 🚀
+## Version 6 🚀
 
 * Subscription Plans
 * Logs
@@ -62,7 +62,8 @@
 * Background Tasks
 * Logging
 * testing
-* CD Pipeline
-* CI Pipeline
+* CD Pipeline(Render) ✅
+* CI Pipeline(Render)
 * AWS Deployment
+* CI/CD for AWS
 * Monitoring
