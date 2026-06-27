@@ -58,7 +58,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:8080",
         "http://localhost:8080",
-        "https://movie-app-frontend-2o9t.onrender.com",
+        "https://cineverse-movie-app-1.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
