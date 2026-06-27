@@ -36,11 +36,10 @@
 
 ## Version 4 🚀
 
-* Home API
-* Trending Movies
-* Top Rated Movies
-* Latest Movies
-* User Movies Genre 
+* Home API ✅
+* Recentely_Added Movies ✅
+* Top Rated Movies ✅
+* Latest Movies(year) ✅
 
 ## Version 5 🚀
 
