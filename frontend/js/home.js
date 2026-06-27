@@ -15,10 +15,10 @@
 /* ── BASE CONFIG ── */
 const CINEVERSE_API_BASE = 'https://cineverse-movie-app.onrender.com';
 const CINEVERSE_API_LIMIT = 200;
-const CV_PLACEHOLDER = 'assets/images/placeholder.jpg';
+const CV_PLACEHOLDER = '';
 const CV_BACKDROP_FALLBACK =
   (typeof FALLBACK_BACKDROPS !== 'undefined' && Array.isArray(FALLBACK_BACKDROPS) && FALLBACK_BACKDROPS[0])
-  || CV_PLACEHOLDER;
+  || '';
 
 /* ── STATE (fetched once, reused everywhere) ── */
 let homeMovies      = [];   // all movies from GET /movies/

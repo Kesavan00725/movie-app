@@ -9,7 +9,7 @@ const API_BASE =
   'https://cineverse-movie-app.onrender.com';
 
 const API_LIMIT = 200;
-const PLACEHOLDER_IMAGE = 'assets/images/placeholder.jpg';
+const PLACEHOLDER_IMAGE = '';
 
 // Genre map is populated at runtime from the /genres/ API endpoint
 const GENRE_MAP = {};
@@ -167,7 +167,7 @@ function normalizeGenre(genre, genreId, genreName) {
 
 function resolveImageUrl(value) {
   const raw = String(value || '').trim();
-  if (!raw || raw === 'null' || raw === 'undefined') return PLACEHOLDER_IMAGE;
+  if (!raw || raw === 'null' || raw === 'undefined') return '';
   if (/^https?:\/\//i.test(raw) || raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
   if (raw.startsWith('//')) return `${location.protocol}${raw}`;
   if (raw.startsWith('/')) {
