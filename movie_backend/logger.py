@@ -11,7 +11,7 @@ formatter = logging.Formatter(
     "%(asctime)s | %(levelname)s | %(message)s"
 )
 
-file_handler = logging.FileHandler("movie_backend/logs/app.log")
+file_handler = logging.FileHandler("logs/app.log")
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(formatter)
 
