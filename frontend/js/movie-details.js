@@ -6,7 +6,7 @@
 
 'use strict';
 
-const API_BASE = 'https://movie-app-qhzc.onrender.com';
+const API_BASE = 'https://cineverse-movie-app.onrender.com';
 const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450"><rect width="300" height="450" fill="#0f1530"/><text x="150" y="220" text-anchor="middle" fill="#ffffff20" font-size="48">🎬</text><text x="150" y="270" text-anchor="middle" fill="#ffffff15" font-size="14">No Image</text></svg>'
 );
@@ -1014,3 +1014,130 @@ function showToast(msg, type = '') {
     setTimeout(() => toast.remove(), 300);
   }, 2800);
 }
+const profileBtn =
+document.getElementById(
+'profile-btn'
+);
+
+
+const dropdown =
+document.getElementById(
+'profile-dropdown'
+);
+
+
+profileBtn.onclick=()=>{
+
+dropdown.classList.toggle(
+'active'
+);
+
+};
+
+
+
+document.addEventListener(
+
+'click',
+
+e=>{
+
+if(
+
+!profileBtn.contains(e.target)
+
+&&
+
+!dropdown.contains(e.target)
+
+){
+
+dropdown.classList.remove(
+
+'active'
+
+);
+
+}
+
+}
+
+);
+
+
+
+const username=
+
+localStorage.getItem(
+
+'user_name'
+
+)||'Guest';
+
+
+
+const email=
+
+localStorage.getItem(
+
+'user_email'
+
+)||'';
+
+
+
+document.getElementById(
+
+'dropdown-name'
+
+).textContent=username;
+
+
+
+document.getElementById(
+
+'dropdown-email'
+
+).textContent=email;
+
+
+
+const initial=
+
+username.charAt(
+
+0
+
+).toUpperCase();
+
+
+
+profileBtn.textContent=initial;
+
+
+
+document.getElementById(
+
+'dropdown-avatar'
+
+).textContent=initial;
+
+
+
+document.getElementById(
+
+'logout-btn'
+
+).onclick=()=>{
+
+
+localStorage.clear();
+
+
+
+window.location.href=
+
+'login.html';
+
+
+};

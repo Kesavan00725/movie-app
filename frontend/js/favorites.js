@@ -7,7 +7,7 @@
 
 'use strict';
 
-const FAV_BASE = 'https://movie-app-qhzc.onrender.com';
+const FAV_BASE = 'https://cineverse-movie-app.onrender.com';
 const FAV_PLACEHOLDER = 'assets/images/placeholder.jpg';
 
 function favToken()    { return localStorage.getItem('access_token') || ''; }
@@ -268,3 +268,130 @@ function initNavbar() {
 function esc(v) {
   return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+const profileBtn =
+document.getElementById(
+'profile-btn'
+);
+
+
+const dropdown =
+document.getElementById(
+'profile-dropdown'
+);
+
+
+profileBtn.onclick=()=>{
+
+dropdown.classList.toggle(
+'active'
+);
+
+};
+
+
+
+document.addEventListener(
+
+'click',
+
+e=>{
+
+if(
+
+!profileBtn.contains(e.target)
+
+&&
+
+!dropdown.contains(e.target)
+
+){
+
+dropdown.classList.remove(
+
+'active'
+
+);
+
+}
+
+}
+
+);
+
+
+
+const username=
+
+localStorage.getItem(
+
+'user_name'
+
+)||'Guest';
+
+
+
+const email=
+
+localStorage.getItem(
+
+'user_email'
+
+)||'';
+
+
+
+document.getElementById(
+
+'dropdown-name'
+
+).textContent=username;
+
+
+
+document.getElementById(
+
+'dropdown-email'
+
+).textContent=email;
+
+
+
+const initial=
+
+username.charAt(
+
+0
+
+).toUpperCase();
+
+
+
+profileBtn.textContent=initial;
+
+
+
+document.getElementById(
+
+'dropdown-avatar'
+
+).textContent=initial;
+
+
+
+document.getElementById(
+
+'logout-btn'
+
+).onclick=()=>{
+
+
+localStorage.clear();
+
+
+
+window.location.href=
+
+'login.html';
+
+
+};

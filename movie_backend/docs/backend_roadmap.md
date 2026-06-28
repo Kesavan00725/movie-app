@@ -36,11 +36,10 @@
 
 ## Version 4 🚀
 
-* Home API
-* Trending Movies
-* Top Rated Movies
-* Latest Movies
-* User Movies Genre 
+* Home API ✅
+* Recentely_Added Movies ✅
+* Top Rated Movies ✅
+* Latest Movies(year) ✅
 
 ## Version 5 🚀
 
@@ -52,7 +51,7 @@
 
 ---
 
-## Version 7 🚀
+## Version 6 🚀
 
 * Subscription Plans
 * Logs
@@ -63,7 +62,8 @@
 * Background Tasks
 * Logging
 * testing
-* CD Pipeline
-* CI Pipeline
+* CD Pipeline(Render) ✅
+* CI Pipeline(Render)
 * AWS Deployment
+* CI/CD for AWS
 * Monitoring
