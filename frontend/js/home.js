@@ -505,11 +505,67 @@ function updateTrendingDetail(movie, index) {
 /* ============================================================
    TOP RATED ALL TIME
    Uses homeData.top_rated from GET /movies/home/ (sorted by backend),
-   falls back to byRating(homeMovies)
+   falls back to byRating(homeMovies).
+   Renders with the same trending-card style + detail panel.
 ============================================================ */
 function loadTopRatedSection() {
+  const track  = document.getElementById('toprated-track');
+  const detail = document.getElementById('toprated-detail');
+  if (!track) return;
+
   const movies = (homeData?.top_rated?.length ? homeData.top_rated : byRating(homeMovies)).slice(0, 16);
-  fillMovieTrack('toprated-track', movies, 'featured');
+  if (!movies.length) { setTrackEmpty(track); return; }
+
+  track.innerHTML = movies.map((movie, i) => buildTrendingCard(movie, i)).join('');
+
+  // Wire up card clicks to update the detail panel
+  let activeIndex = 0;
+  const prevBtn = track.closest('.trending-carousel-wrap')?.querySelector('.trending-btn-prev');
+  const nextBtn = track.closest('.trending-carousel-wrap')?.querySelector('.trending-btn-next');
+
+  function selectTopRated(index) {
+    activeIndex = Math.max(0, Math.min(movies.length - 1, index));
+    track.querySelectorAll('.trending-card').forEach((c, i) => c.classList.toggle('active-card', i === activeIndex));
+    updateTopRatedDetail(movies[activeIndex], activeIndex);
+    track.querySelectorAll('.trending-card')[activeIndex]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  track.querySelectorAll('.trending-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.trending-card-play')) {
+        window.location.href = `movie-details.html?id=${movies[Number(card.dataset.index)].id}`;
+        return;
+      }
+      selectTopRated(Number(card.dataset.index));
+    });
+    card.addEventListener('keydown', e => { if (e.key === 'Enter') selectTopRated(Number(card.dataset.index)); });
+  });
+
+  prevBtn?.addEventListener('click', () => selectTopRated(activeIndex - 1));
+  nextBtn?.addEventListener('click', () => selectTopRated(activeIndex + 1));
+  if (typeof initCarouselDrag === 'function') initCarouselDrag(track);
+
+  if (detail) updateTopRatedDetail(movies[0], 0);
+}
+
+function updateTopRatedDetail(movie, index) {
+  const detail = document.getElementById('toprated-detail');
+  if (!detail || !movie) return;
+
+  detail.classList.add('panel-transitioning');
+  setTimeout(() => {
+    detail.querySelector('.tdp-eyebrow').textContent     = `Top Rated #${index + 1}`;
+    detail.querySelector('.tdp-title').textContent       = movie.title;
+    detail.querySelector('.tdp-rating-val').textContent  = fmtRating(movie.vote_average);
+    detail.querySelector('.tdp-year').textContent        = movie.release_year || fmtYear(movie.release_date) || '—';
+    detail.querySelector('.tdp-genre').textContent       = genreLabel(movie);
+    detail.querySelector('.tdp-desc').textContent        = movie.description || movie.overview || '';
+    const watchBtn = detail.querySelector('.tdp-watch-btn');
+    const wlBtn    = detail.querySelector('.tdp-wl-btn');
+    if (watchBtn) watchBtn.href = `movie-details.html?id=${movie.id}`;
+    if (wlBtn)    wlBtn.onclick = () => Watchlist.add(movie);
+    detail.classList.remove('panel-transitioning');
+  }, 160);
 }
 
 /* ============================================================
@@ -767,8 +823,6 @@ async function init() {
   }
 
   initHero();
-  loadFeaturedSection();
-  loadTrendingSection();
   loadTopRatedSection();
   loadNowPlayingSection();
   loadUpcomingSection();
