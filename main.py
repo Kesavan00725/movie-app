@@ -28,6 +28,8 @@ from movie_backend.models.movie_image import MovieImage
 from movie_backend.models.watchlist import Watchlist
 from movie_backend.models.profile import Profile
 
+from movie_backend.logger import logger
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Welcome to lifespan")
@@ -65,16 +67,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    start = time.perf_counter()
+    start_time = time.perf_counter()
 
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        execution_time = time.perf_counter() - start_time
 
-    end = time.perf_counter()
+        logger.exception(
+            f"{request.method} {request.url.path} "
+            f"failed after {execution_time:.4f}s"
+        )
 
-    print(f"Request time: {end - start:.4f} seconds")
+        raise
+
+    execution_time = time.perf_counter() - start_time
+
+    logger.info(
+        f"{request.method} {request.url.path} "
+        f"Status={response.status_code} "
+        f"Time={execution_time:.4f}s"
+    )
 
     return response
 
