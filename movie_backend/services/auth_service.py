@@ -13,6 +13,16 @@ from movie_backend.util.helpers import (
     create_access_token
 )
 
+from movie_backend.util.email import (
+    send_welcome_email,
+    send_otp_email,
+    generate_otp
+)
+
+from movie_backend.util.helpers import rate_limit,redis
+
+import uuid
+import json
 
 async def signup_service(
     request: SignupRequest,
@@ -44,18 +54,11 @@ async def signup_service(
 
     await db.refresh(new_user)
 
-    token = create_access_token(
-        {
-            "id": new_user.id,
-            "email": new_user.email
-        }
-    )
+    send_welcome_email(new_user.username,new_user.email)
 
     return {
         "name": new_user.username,
-        "email": new_user.email,
-        "access_token": token,
-        "token_type": "bearer"
+        "email": new_user.email
     }
 
 
@@ -129,3 +132,113 @@ async def get_current_user_service(
         "name": user.username,
         "email": user.email
     }
+
+async def get_otp_service(
+        request,
+        db: AsyncSession
+):
+    user = select(User).where(User.email == request.email)
+    result = await db.execute(user)
+    email = result.scalar_one_or_none()
+
+    if email is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,detail="Email not found")
+
+    otp = generate_otp()
+    request_id = str(uuid.uuid4())
+
+    await redis.setex(
+        f"forgot:{request_id}",
+        300,
+        json.dumps({
+            "email": request.email,
+            "otp": otp
+        })
+    )
+
+    send_otp_email(email,otp)
+
+    return {
+        "message": "Check your OTP in your mail",
+        "request_id": request_id
+    }
+
+async def get_otp_verified_service(
+    request,
+    db: AsyncSession
+):
+    data = await redis.get(f"forgot:{request.request_id}")
+
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP expired or invalid request."
+        )
+
+    data = json.loads(data)
+
+    if data["otp"] != request.otp:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OTP."
+        )
+
+    # Mark OTP as verified
+    data["verified"] = True
+
+    # Keep the remaining TTL
+    ttl = await redis.ttl(f"forgot:{request.request_id}")
+
+    await redis.setex(
+        f"forgot:{request.request_id}",
+        ttl,
+        json.dumps(data)
+    )
+
+    return {
+        "message": "OTP verified successfully.",
+        "request_id": request.request_id
+    }
+
+async def reset_password_service(
+    request,
+    db: AsyncSession
+):
+    data = await redis.get(f"forgot:{request.request_id}")
+
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Request expired."
+        )
+
+    data = json.loads(data)
+
+    if not data["verified"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP not verified."
+        )
+
+    result = await db.execute(
+        select(User).where(User.email == data["email"])
+    )
+
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+    user.hashed_password = hash_password(request.new_password)
+    await db.commit()
+    await db.refresh(user)
+    await redis.delete(f"forgot:{request.request_id}")
+    return {
+        "message": "Password reset successfully."
+    }
+
+
+

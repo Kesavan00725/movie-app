@@ -8,14 +8,23 @@ from movie_backend.schemas.auth_schema import (
     LoginRequest,
     LoginResponse,
     LogoutResponse,
-    UserResponse
+    UserResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
+    OtpVerificationRequest,
+    OtpVerificationResponse,
+    ResetPasswordRequest
 )
 from movie_backend.services.auth_service import (
     signup_service,
     login_service,
     logout_service,
-    get_current_user_service
+    get_current_user_service,
+    get_otp_service,
+    get_otp_verified_service,
+    reset_password_service
 )
+
 from movie_backend.util.helpers import verify_token
 from movie_backend.util.helpers import rate_limit
 
@@ -51,3 +60,25 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db)
 ):
     return await get_current_user_service(current_user, db)
+
+@router.post("/otp", response_model=PasswordResetResponse, dependencies=[Depends(rate_limit(4, 300))])
+async def get_otp(
+    request: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    return await get_otp_service(request, db)
+
+@router.post("/otp_verified", response_model=OtpVerificationResponse, dependencies=[Depends(rate_limit(4, 300))])
+async def get_otp_verified(
+    request: OtpVerificationRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    return await get_otp_verified_service(request, db)
+
+@router.post("/reset-password")
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    return await reset_password_service(request, db)
+

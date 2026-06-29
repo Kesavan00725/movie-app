@@ -17,9 +17,6 @@ from movie_backend.routes.review import router as review
 from movie_backend.routes.watchlist import router as watchlist
 from movie_backend.routes.profile import router as profile
 
-
-
-
 from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
 from movie_backend.models.movie import Movie
@@ -90,8 +87,6 @@ def scalar():
         openapi_url=app.openapi_url,
         title="Scalar API"
     )
-
-
 
 app.include_router(auth)
 app.include_router(movies)

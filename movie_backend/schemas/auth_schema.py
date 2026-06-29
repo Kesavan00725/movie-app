@@ -32,3 +32,22 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetResponse(BaseModel):
+    message: str
+    request_id: str
+
+class OtpVerificationRequest(BaseModel):
+    request_id: str
+    otp: str
+
+class OtpVerificationResponse(BaseModel):
+    message: str
+    reset_token: str
+
+class ResetPasswordRequest(BaseModel):
+    request_id: str
+    new_password: str
