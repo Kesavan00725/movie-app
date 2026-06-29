@@ -11,6 +11,7 @@ from movie_backend.services.movies_service import (
 )
 
 from movie_backend.schemas.movie_schema import MovieResponse,HomePageResponse
+from movie_backend.util.helpers import rate_limit
 from typing import List
 
 
@@ -21,7 +22,7 @@ router = APIRouter(
 )
 
 
-@router.get("/",response_model=List[MovieResponse])
+@router.get("/",response_model=List[MovieResponse],dependencies=[Depends(rate_limit(100, 60))])
 async def get_movies(
     page: int = 1,
     limit: int = 10,
@@ -34,7 +35,7 @@ async def get_movies(
     )
 
 
-@router.get("/{movie_id}",response_model=MovieResponse)
+@router.get("/{movie_id}",response_model=MovieResponse,dependencies=[Depends(rate_limit(100, 60))])
 async def get_movie(
     movie_id: int,
     db: AsyncSession = Depends(get_db)
@@ -45,7 +46,7 @@ async def get_movie(
     )
 
 
-@router.get("/search/",response_model=List[MovieResponse])
+@router.get("/search/",response_model=List[MovieResponse],dependencies=[Depends(rate_limit(60, 60))])
 async def search_movies(
     q: str,
     page: int = 1,
@@ -60,7 +61,7 @@ async def search_movies(
     )
 
 
-@router.get("/filter/",response_model=List[MovieResponse])
+@router.get("/filter/",response_model=List[MovieResponse],dependencies=[Depends(rate_limit(60, 60))])
 async def filter_movies(
     genre: str | None = None,
     language: str | None = None,
