@@ -1,11 +1,15 @@
 from fastapi import (
     Header,
     HTTPException,
-    UploadFile
+    UploadFile,
+    Request,
+    status
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from movie_backend.models.user import User
 from sqlalchemy import select
+
+import redis.asyncio as redis
 
 from passlib.context import CryptContext
 from jose import jwt
@@ -19,7 +23,20 @@ import os
 
 UPLOAD_DIR = "uploads/profile_pictures"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 load_dotenv()
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+
+print(f"REDIS_HOST = {REDIS_HOST}")
+print(f"REDIS_PORT = {REDIS_PORT}")
+
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    decode_responses=True,
+)
 
 
 pwd_context = CryptContext(
@@ -205,3 +222,25 @@ def _save_file(file: UploadFile) -> str:
     with open(file_path, "wb") as f:
         f.write(file.file.read())
     return file_path
+
+
+def rate_limit(max_requests: int, window: int):
+    async def dependency(request: Request):
+        ip = request.client.host
+        key = f"rate_limit:{ip}"
+
+        requests = await redis_client.get(key)
+
+        if requests is None:
+            await redis_client.set(key, 1, ex=window)
+            return
+
+        if int(requests) >= max_requests:
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded"
+            )
+
+        await redis_client.incr(key)
+
+    return dependency

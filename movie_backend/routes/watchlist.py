@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
  
 from movie_backend.database.database import get_db
 from movie_backend.util.helpers import verify_token
- 
+from movie_backend.util.helpers import rate_limit
 from movie_backend.schemas.watchlist_schema import (
     WatchlistResponse,
     AllWatchlistResponse
@@ -18,8 +18,7 @@ from movie_backend.services.watchlist_service import (
     remove_watchlist_service,
     get_watchlist_service
 )
-from typing import List
-
+from movie_backend.util.helpers import rate_limit
 router = APIRouter(
     prefix="/watchlist",
     tags=["Watchlist"]
@@ -28,7 +27,8 @@ router = APIRouter(
  
 @router.post(
     "/add/{movie_id}",
-    response_model=WatchlistResponse
+    response_model=WatchlistResponse,
+    dependencies=[Depends(rate_limit(20, 60))]
 )
 async def add_to_watchlist(
     movie_id: int,
@@ -44,7 +44,8 @@ async def add_to_watchlist(
  
 @router.delete(
     "/{movie_id}",
-    response_model=MessageResponse
+    response_model=MessageResponse,
+    dependencies=[Depends(rate_limit(20, 60))]
 )
 async def remove_from_watchlist(
     movie_id: int,
@@ -60,7 +61,8 @@ async def remove_from_watchlist(
  
 @router.get(
     "/",
-    response_model=List[AllWatchlistResponse]
+    response_model=list[WatchlistResponse],
+    dependencies=[Depends(rate_limit(60, 60))]
 )
 async def get_watchlist(
     db: AsyncSession = Depends(get_db),

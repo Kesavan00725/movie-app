@@ -53,17 +53,10 @@
         <a href="movie_page.html"         class="nav-link active" role="listitem" aria-current="page">Movies</a>
         <a href="watchlist.html"      class="nav-link"        role="listitem">Watchlist</a>
         <a href="favorites.html"      class="nav-link"        role="listitem">Favorites</a>
-        <a href="mood.html"           class="nav-link"        role="listitem">Mood Pick</a>
-        <a href="recommendations.html" class="nav-link"       role="listitem">For You</a>
+        <a href="ai_recommendations.html" class="nav-link"       role="listitem">AI Recommendations</a>
       </div>
       <div class="nav-actions">
-        <button class="nav-search-btn" aria-label="Open search" aria-expanded="false" aria-controls="search-overlay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <span>Search</span>
-          <span class="nav-search-hint">⌘K</span>
-        </button>
+        
         <button class="nav-icon-btn" aria-label="Notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -142,8 +135,8 @@
       <a href="movie_page.html"          class="nav-mobile-link active">Movies</a>
       <a href="watchlist.html"       class="nav-mobile-link">Watchlist</a>
       <a href="favorites.html"       class="nav-mobile-link">Favorites</a>
-      <a href="mood.html"            class="nav-mobile-link">Mood Pick</a>
-      <a href="recommendations.html" class="nav-mobile-link">For You</a>
+      
+      <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>
     </nav>
   </nav>
 
@@ -222,12 +215,12 @@
 
         <div class="search-chips" role="group" aria-label="Trending searches">
           <span class="search-chips-label">Trending:</span>
-          <button class="search-chip" data-query="Interstellar">Interstellar</button>
+          <button class="search-chip" data-query="God Father">God Father</button>
           <button class="search-chip" data-query="Inception">Inception</button>
-          <button class="search-chip" data-query="Oppenheimer">Oppenheimer</button>
-          <button class="search-chip" data-query="Dune">Dune</button>
-          <button class="search-chip" data-query="The Batman">The Batman</button>
-          <button class="search-chip" data-query="Parasite">Parasite</button>
+          <button class="search-chip" data-query="Titanic">Titanic</button>
+          <button class="search-chip" data-query="Hangover">Hangover</button>
+          <button class="search-chip" data-query="Batman"> Batman</button>
+          <button class="search-chip" data-query="It">It</button>
         </div>
       </div>
     </div>
@@ -246,10 +239,10 @@
           <button class="filter-chip" data-filter="genre" data-value="Comedy">Comedy</button>
           <button class="filter-chip" data-filter="genre" data-value="Drama">Drama</button>
           
-          <button class="filter-chip" data-filter="genre" data-value="Thriller">Thriller</button>
-          <button class="filter-chip" data-filter="genre" data-value="Adventure">Adventure</button>
+          <button class="filter-chip" data-filter="genre" data-value="Sci-Fi">Sci-Fi</button>
+          <button class="filter-chip" data-filter="genre" data-value="Superhero">Superhero</button>
           <button class="filter-chip" data-filter="genre" data-value="Fantasy">Fantasy</button>
-          <button class="filter-chip" data-filter="genre" data-value="Animation">Animation</button>
+          <button class="filter-chip" data-filter="genre" data-value="Horror">Horror</button>
         </div>
 
         <div class="filter-sep" aria-hidden="true"></div>
@@ -535,19 +528,35 @@
             </div>
           </a>
 
-          <a href="movie_page.html?genre=Thriller" class="genre-card" style="--genre-color:#f59e0b" role="listitem" aria-label="Browse Thriller movies">
-            <img class="genre-card-bg" src="assets/images/genres/thriller.jpg" alt="Thriller genre" loading="lazy">
+         <a href="movie_page.html?genre=Comedy" class="genre-card" style="--genre-color:#f59e0b" role="listitem" aria-label="Browse Comedy movies">
+            <img class="genre-card-bg" src="assets/images/genres/comedy.jpg" alt="Comedy genre" loading="lazy">
             <div class="genre-card-overlay" aria-hidden="true"></div>
             <div class="genre-card-content">
-              <div class="genre-card-name">THRILLER</div>
+              <div class="genre-card-name">COMEDY</div>
             </div>
           </a>
 
-          <a href="movie_page.html?genre=Adventure" class="genre-card" style="--genre-color:#22d3a0" role="listitem" aria-label="Browse Adventure movies">
-            <img class="genre-card-bg" src="assets/images/genres/adventure.jpg" alt="Adventure genre" loading="lazy">
+          <a href="movie_page.html?genre=Horror" class="genre-card" style="--genre-color:#22d3a0" role="listitem" aria-label="Browse Horror movies">
+            <img class="genre-card-bg" src="assets/images/genres/horror.jpg" alt="Horror genre" loading="lazy">
             <div class="genre-card-overlay" aria-hidden="true"></div>
             <div class="genre-card-content">
-              <div class="genre-card-name">ADVENTURE</div>
+              <div class="genre-card-name">HORROR</div>
+            </div>
+          </a>
+
+          <a href="movie_page.html?genre=Superhero" class="genre-card" style="--genre-color:#22d3a0" role="listitem" aria-label="Browse Superhero movies">
+            <img class="genre-card-bg" src="assets/images/genres/superhero.jpg" alt="Superhero genre" loading="lazy">
+            <div class="genre-card-overlay" aria-hidden="true"></div>
+            <div class="genre-card-content">
+              <div class="genre-card-name">SUPERHERO</div>
+            </div>
+          </a>
+
+          <a href="movie_page.html?genre=Crime" class="genre-card" style="--genre-color:#22d3a0" role="listitem" aria-label="Browse Crime movies">
+            <img class="genre-card-bg" src="assets/images/genres/crime.jpg" alt="Crime genre" loading="lazy">
+            <div class="genre-card-overlay" aria-hidden="true"></div>
+            <div class="genre-card-content">
+              <div class="genre-card-name">CRIME</div>
             </div>
           </a>
 
@@ -651,16 +660,14 @@
             <h3 class="footer-col-title">Company</h3>
             <ul class="footer-col-links">
               <li><a href="#" class="footer-col-link">About Us</a></li>
-              <li><a href="#" class="footer-col-link">Careers</a></li>
-              <li><a href="#" class="footer-col-link">Press</a></li>
-              <li><a href="#" class="footer-col-link">Blog</a></li>
+              
               <li><a href="#" class="footer-col-link">Contact</a></li>
             </ul>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p class="footer-copy">© 2025 <span>CineVerse</span>. All rights reserved.</p>
+        <p class="footer-copy">© 2026 <span>CineVerse</span>. All rights reserved.</p>
         <nav class="footer-legal" aria-label="Legal links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>

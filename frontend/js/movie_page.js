@@ -44,6 +44,9 @@ async function boot() {
 
   try {
     await loadGenres();
+    // Resolve genre ID to name now that GENRE_MAP is populated
+    state.genre = resolveGenreParam(state.genre);
+    syncChips('genre', state.genre);
     state.allMovies = await fetchMovies();
     applyFilters();
     renderGrid();
@@ -214,9 +217,17 @@ function movieForStorage(movie) {
 /* ============================================================
    URL PARAMS
 ============================================================ */
+function resolveGenreParam(value) {
+  // If value is a numeric ID, resolve to genre name using GENRE_MAP
+  if (!value || value === 'all') return 'all';
+  const asNum = Number(value);
+  if (!isNaN(asNum) && GENRE_MAP[asNum]) return GENRE_MAP[asNum];
+  return value; // already a name string
+}
+
 function readURLParams() {
   const params = new URLSearchParams(location.search);
-  if (params.get('genre')) state.genre = params.get('genre');
+  if (params.get('genre')) state.genre = params.get('genre'); // may be ID or name
   if (params.get('year')) state.year = params.get('year');
   if (params.get('q')) state.query = params.get('q').trim().toLowerCase();
 
@@ -245,7 +256,10 @@ function applyFilters(source = state.allMovies) {
 
   if (state.genre !== 'all') {
     const wanted = state.genre.toLowerCase();
-    list = list.filter(movie => genreName(movie).toLowerCase() === wanted);
+    list = list.filter(movie => {
+      const name = (movie.genre?.name || '').toLowerCase();
+      return name === wanted || name.includes(wanted) || wanted.includes(name);
+    });
   }
 
   if (state.year !== 'all') {

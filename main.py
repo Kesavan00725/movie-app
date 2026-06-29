@@ -17,10 +17,6 @@ from movie_backend.routes.review import router as review
 from movie_backend.routes.watchlist import router as watchlist
 from movie_backend.routes.profile import router as profile
 
-
-
-
-# Import models so SQLAlchemy registers them
 from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
 from movie_backend.models.movie import Movie
@@ -65,8 +61,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.perf_counter()
 
@@ -93,8 +87,6 @@ def scalar():
         openapi_url=app.openapi_url,
         title="Scalar API"
     )
-
-
 
 app.include_router(auth)
 app.include_router(movies)

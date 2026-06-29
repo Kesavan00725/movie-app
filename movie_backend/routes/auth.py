@@ -8,20 +8,33 @@ from movie_backend.schemas.auth_schema import (
     LoginRequest,
     LoginResponse,
     LogoutResponse,
-    UserResponse
+    UserResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
+    OtpVerificationRequest,
+    OtpVerificationResponse,
+    ResetPasswordRequest
 )
+
+from movie_backend.schemas.response_schema import MessageResponse
+
 from movie_backend.services.auth_service import (
     signup_service,
     login_service,
     logout_service,
-    get_current_user_service
+    get_current_user_service,
+    get_otp_service,
+    get_otp_verified_service,
+    reset_password_service
 )
+
 from movie_backend.util.helpers import verify_token
+from movie_backend.util.helpers import rate_limit
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/signup", response_model=SignupResponse)
+@router.post("/signup", response_model=SignupResponse,dependencies=[Depends(rate_limit(3, 60))])
 async def signup(
     request: SignupRequest,
     db: AsyncSession = Depends(get_db)
@@ -29,7 +42,7 @@ async def signup(
     return await signup_service(request, db)
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login", response_model=LoginResponse,dependencies=[Depends(rate_limit(5, 60))])
 async def login(
     request: LoginRequest,
     db: AsyncSession = Depends(get_db)
@@ -37,16 +50,37 @@ async def login(
     return await login_service(request, db)
 
 
-@router.post("/logout", response_model=LogoutResponse)
+@router.post("/logout", response_model=LogoutResponse,dependencies=[Depends(rate_limit(10, 60))])
 async def logout(
     current_user=Depends(verify_token)
 ):
     return await logout_service(current_user)
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=UserResponse, dependencies=[Depends(rate_limit(60, 60))])
 async def get_current_user(
     current_user=Depends(verify_token),
     db: AsyncSession = Depends(get_db)
 ):
     return await get_current_user_service(current_user, db)
+
+@router.post("/otp", response_model=PasswordResetResponse, dependencies=[Depends(rate_limit(5, 150))])
+async def get_otp(
+    request: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    return await get_otp_service(request, db)
+
+@router.post("/otp_verified", response_model=OtpVerificationResponse, dependencies=[Depends(rate_limit(5, 150))])
+async def get_otp_verified(
+    request: OtpVerificationRequest,
+):
+    return await get_otp_verified_service(request)
+
+@router.post("/reset-password",response_model=MessageResponse, dependencies=[Depends(rate_limit(5, 150))])
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    return await reset_password_service(request, db)
+
