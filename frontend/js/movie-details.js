@@ -92,7 +92,35 @@ async function apiPatch(path, body = {}) {
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
+/* ================================================================
+   WATCH HISTORY
+================================================================ */
 
+async function updateWatchHistory(progress = 0, completed = false) {
+
+  if (!getToken() || !movieId) return;
+
+  try {
+
+    await CV_WatchHistory.updateProgress(
+
+      Number(movieId),
+
+      progress,
+
+      completed
+
+    );
+
+  }
+
+  catch (err) {
+
+    console.warn("Watch history update failed", err);
+
+  }
+
+}
 function escHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -580,14 +608,51 @@ function openTrailer() {
   if (ytId) {
     wrap.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
   } else {
-    wrap.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000">
-      <source src="${escHtml(trailerUrl)}">
-      <p style="color:#fff;text-align:center;padding:2rem">Unable to play trailer.</p>
-    </video>`;
+   wrap.innerHTML = `
+<video
+    id="movie-player"
+    controls
+    autoplay
+    style="width:100%;height:100%;background:#000">
+
+    <source src="${escHtml(trailerUrl)}">
+
+    <p style="color:#fff;text-align:center;padding:2rem">
+        Unable to play trailer.
+    </p>
+
+</video>`;
+const player = document.getElementById("movie-player");
+
+if (player) {
+
+    // Update watch progress while watching
+    player.addEventListener("timeupdate", () => {
+
+        updateWatchHistory(
+            Math.floor(player.currentTime),
+            false
+        );
+
+    });
+
+    // Mark as completed when finished
+    player.addEventListener("ended", () => {
+
+        updateWatchHistory(
+            Math.floor(player.duration),
+            true
+        );
+
+    });
+
+}
   }
 
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
+  // Save watch history
+updateWatchHistory(0, false);
 }
 
 function closeTrailer() {

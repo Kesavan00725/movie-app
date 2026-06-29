@@ -528,7 +528,109 @@ var CV_Watchlist = {
   }
 
 };
+// ── CV_WatchHistory ───────────────────────────
+// Watch History API
 
+var CV_WatchHistory = {
+
+  // Get complete watch history
+  getHistory: async function () {
+
+    const res = await fetch(CV_BASE + '/watch-history/', {
+      headers: cvAuthHeaders()
+    });
+
+    if (res.status === 401) {
+      cvHandle401();
+      return [];
+    }
+
+    return res.ok ? res.json() : [];
+
+  },
+
+  // Continue Watching
+  getContinueWatching: async function () {
+
+    const res = await fetch(CV_BASE + '/watch-history/continue-watching', {
+      headers: cvAuthHeaders()
+    });
+
+    if (res.status === 401) {
+      cvHandle401();
+      return [];
+    }
+
+    return res.ok ? res.json() : [];
+
+  },
+
+  // Get one movie progress
+  getMovieProgress: async function (movieId) {
+
+    const res = await fetch(
+      CV_BASE + '/watch-history/' + movieId,
+      {
+        headers: cvAuthHeaders()
+      }
+    );
+
+    if (res.status === 401) {
+      cvHandle401();
+      return null;
+    }
+
+    return res.ok ? res.json() : null;
+
+  },
+
+  // Create / Update watch history
+  updateProgress: async function (
+    movieId,
+    progress = 0,
+    completed = false
+  ) {
+
+    return await fetch(CV_BASE + '/watch-history/', {
+
+      method: 'POST',
+
+      headers: {
+        ...cvAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+
+        movie_id: movieId,
+
+        progress: progress,
+
+        completed: completed
+
+      })
+
+    });
+
+  },
+
+  // Mark completed
+  markCompleted: async function (movieId) {
+
+    return await fetch(
+      CV_BASE + '/watch-history/' + movieId + '/complete',
+      {
+
+        method: 'PATCH',
+
+        headers: cvAuthHeaders()
+
+      }
+    );
+
+  }
+
+};
 // =============================================
 // home.html — "My Profile" dropdown link fix
 // Find the profile dropdown link in home.html
