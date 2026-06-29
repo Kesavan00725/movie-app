@@ -2,7 +2,8 @@ from fastapi import (
     Header,
     HTTPException,
     UploadFile,
-    Request
+    Request,
+    status
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from movie_backend.models.user import User
@@ -28,6 +29,8 @@ load_dotenv()
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
+print(f"REDIS_HOST = {REDIS_HOST}")
+print(f"REDIS_PORT = {REDIS_PORT}")
 
 redis_client = redis.Redis(
     host=REDIS_HOST,

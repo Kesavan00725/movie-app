@@ -46,7 +46,7 @@ class OtpVerificationRequest(BaseModel):
 
 class OtpVerificationResponse(BaseModel):
     message: str
-    reset_token: str
+    request_id: str
 
 class ResetPasswordRequest(BaseModel):
     request_id: str

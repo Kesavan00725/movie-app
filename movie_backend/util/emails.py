@@ -99,3 +99,4 @@ def send_otp_email(user_email: str, otp: str):
 # ====================================================
 def generate_otp():
     return str(secrets.randbelow(900000) + 100000)
+
