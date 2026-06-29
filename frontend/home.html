@@ -810,7 +810,7 @@
   ============================================================ -->
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
-      <a href="index.html" class="nav-logo" aria-label="CineVerse Home">
+      <a href="home.html" class="nav-logo" aria-label="CineVerse Home">
         <div class="nav-logo-mark" aria-hidden="true">C</div>
         <span class="nav-logo-text">CINE<span>VERSE</span></span>
       </a>
@@ -819,8 +819,7 @@
         <a href="movie_page.html"      class="nav-link"        role="listitem">Movies</a>
         <a href="watchlist.html"   class="nav-link"        role="listitem">Watchlist</a>
         <a href="favorites.html"   class="nav-link"        role="listitem">Favorites</a>
-        <a href="mood.html"        class="nav-link"        role="listitem">Mood Pick</a>
-        <a href="recommendations.html" class="nav-link"   role="listitem">For You</a>
+        <a href="ai_recommendations.html" class="nav-link"   role="listitem">AI Recommendations</a>
       </div>
       <div class="nav-actions">
         <button class="nav-search-btn" aria-label="Open search" aria-expanded="false" aria-controls="search-overlay">
@@ -837,19 +836,78 @@
           </svg>
           <span class="nav-badge">3</span>
         </button>
-        <div class="nav-avatar" role="button" aria-label="User menu" tabindex="0" aria-haspopup="true">A</div>
+        <div class="profile-menu-container">
+
+    <div class="nav-avatar"
+         id="profile-btn"
+         role="button"
+         tabindex="0"
+         aria-haspopup="true">
+
+        A
+
+    </div>
+
+    <div class="profile-dropdown" id="profile-dropdown">
+
+        <div class="profile-header">
+
+            <div class="profile-avatar" id="dropdown-avatar">
+                A
+            </div>
+
+            <div>
+
+                <h4 id="dropdown-name">Guest</h4>
+
+                <p id="dropdown-email">
+                    guest@example.com
+                </p>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <a href="profile.html">
+
+            👤 My Profile
+
+        </a>
+
+        <a href="favorites.html">
+
+            ❤️ Favorites
+
+        </a>
+
+        <a href="watchlist.html">
+
+            🎬 Watchlist
+
+        </a>
+
+        <button id="logout-btn">
+
+            🚪 Logout
+
+        </button>
+
+    </div>
+
+</div>
         <div class="nav-hamburger" role="button" aria-label="Toggle menu" aria-expanded="false" tabindex="0">
           <span></span><span></span><span></span>
         </div>
       </div>
     </div>
     <nav class="nav-mobile-drawer" aria-label="Mobile navigation">
-      <a href="index.html"       class="nav-mobile-link active">Home</a>
+      <a href="home.html"       class="nav-mobile-link active">Home</a>
       <a href="movies.html"      class="nav-mobile-link">Movies</a>
       <a href="watchlist.html"   class="nav-mobile-link">Watchlist</a>
       <a href="favorites.html"   class="nav-mobile-link">Favorites</a>
-      <a href="mood.html"        class="nav-mobile-link">Mood Pick</a>
-      <a href="recommendations.html" class="nav-mobile-link">For You</a>
+      <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>
     </nav>
   </nav>
 
@@ -1044,121 +1102,9 @@
       </div>
     </div>
 
-    <!-- ── FEATURED SPOTLIGHT (unchanged) ── -->
-    <section class="featured-section" aria-label="Featured movies">
-      <div class="section-header reveal">
-        <div class="section-title-group">
-          <p class="section-eyebrow">Editor's Selection</p>
-          <h2 class="section-title">Featured This Week</h2>
-          <p class="section-subtitle">Hand-picked by our cinema experts</p>
-        </div>
-        <a href="movies.html" class="section-see-all" aria-label="Browse all movies">
-          Browse All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </a>
-      </div>
-      <div class="featured-grid">
-        <a class="featured-main reveal-scale" href="#" aria-label="Featured movie">
-          <div class="skeleton" style="width:100%;height:100%"></div>
-        </a>
-        <div class="featured-sidebar stagger-children" role="list" aria-label="More featured movies">
-          <div class="skeleton" style="height:88px;border-radius:12px"></div>
-          <div class="skeleton" style="height:88px;border-radius:12px"></div>
-          <div class="skeleton" style="height:88px;border-radius:12px"></div>
-          <div class="skeleton" style="height:88px;border-radius:12px"></div>
-          <div class="skeleton" style="height:88px;border-radius:12px"></div>
-        </div>
-      </div>
-    </section>
 
     <!-- ================================================================
          SECTION 2 — TRENDING THIS WEEK (premium centered carousel)
-         Key changes:
-         • 80% viewport-width stage
-         • Active card highlighted (scale + glow + saturated image)
-         • Detail panel below updates dynamically
-         • TMDB data populates when available, local posters as fallback
-    ================================================================ -->
-    <section class="trending-premium-section reveal" id="section-trending" aria-label="Trending movies">
-      <div class="trending-premium-header reveal">
-        <p class="section-eyebrow">What's Hot</p>
-        <h2 class="section-title">Trending This Week</h2>
-        <p class="section-subtitle">The movies everyone's watching right now</p>
-      </div>
-
-      <div class="trending-stage">
-        <div class="trending-carousel-wrap">
-          <button class="trending-btn trending-btn-prev" aria-label="Previous trending movies">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-          </button>
-          <div class="trending-track" id="trending-track" role="list" aria-label="Trending movies">
-            <!-- Skeleton placeholders -->
-            <div class="trending-card" style="pointer-events:none">
-              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
-              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
-              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
-            </div>
-            <div class="trending-card" style="pointer-events:none">
-              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
-              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
-              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
-            </div>
-            <div class="trending-card" style="pointer-events:none">
-              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
-              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
-              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
-            </div>
-            <div class="trending-card" style="pointer-events:none">
-              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
-              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
-              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
-            </div>
-            <div class="trending-card" style="pointer-events:none">
-              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
-              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
-              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
-            </div>
-          </div>
-          <button class="trending-btn trending-btn-next" aria-label="Next trending movies">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Dynamic detail panel -->
-        <div class="trending-detail-panel" id="trending-detail" aria-live="polite" aria-label="Selected movie details">
-          <div class="tdp-left">
-            <p class="tdp-eyebrow">Trending #1</p>
-            <h3 class="tdp-title">Loading…</h3>
-            <div class="tdp-meta">
-              <span class="tdp-meta-item">
-                <svg viewBox="0 0 24 24" fill="#f4c542" width="14" height="14"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span class="tdp-rating-val">—</span>
-              </span>
-              <span class="tdp-meta-item tdp-year">—</span>
-              <span class="tdp-genre tdp-genre-tag"></span>
-            </div>
-            <p class="tdp-desc"></p>
-          </div>
-          <div class="tdp-right">
-            <a class="btn-primary tdp-watch-btn" href="#" aria-label="Watch now">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
-              Watch Now
-            </a>
-            <button class="btn-ghost tdp-wl-btn" aria-label="Add to watchlist">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              Watchlist
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- ── CONTINUE WATCHING (unchanged) ── -->
     <section class="section section-ambient" id="section-cw" aria-label="Continue watching">
       <div class="section-header reveal">
@@ -1198,196 +1144,93 @@
       </div>
     </div>
 
-    <!-- ── TOP RATED (unchanged) ── -->
-    <section class="section" id="section-toprated" aria-label="Top rated movies">
-      <div class="section-header reveal">
-        <div class="section-title-group">
-          <p class="section-eyebrow">Critically Acclaimed</p>
-          <h2 class="section-title">Top Rated All Time</h2>
-          <p class="section-subtitle">Films the world agrees are masterpieces</p>
-        </div>
-        <a href="movies.html?sort=top_rated" class="section-see-all" aria-label="See all top rated">
-          See All
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </a>
+    <!-- ── TOP RATED (trending-card style) ── -->
+    <section class="trending-premium-section" id="section-toprated" aria-label="Top rated movies">
+      <div class="trending-premium-header reveal">
+        <p class="section-eyebrow">Critically Acclaimed</p>
+        <h2 class="section-title">Top Rated All Time</h2>
+        <p class="section-subtitle">Films the world agrees are masterpieces</p>
       </div>
-      <div class="carousel-wrap">
-        <button class="carousel-btn carousel-btn-prev" aria-label="Previous">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <div class="carousel-track" id="toprated-track" role="list" aria-label="Top rated movies"></div>
-        <button class="carousel-btn carousel-btn-next" aria-label="Next">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
+      <div class="trending-stage">
+        <div class="trending-carousel-wrap">
+          <button class="trending-btn trending-btn-prev" aria-label="Previous top rated movies">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+          </button>
+          <div class="trending-track" id="toprated-track" role="list" aria-label="Top rated movies">
+            <div class="trending-card" style="pointer-events:none">
+              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
+              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
+              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
+            </div>
+            <div class="trending-card" style="pointer-events:none">
+              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
+              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
+              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
+            </div>
+            <div class="trending-card" style="pointer-events:none">
+              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
+              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
+              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
+            </div>
+            <div class="trending-card" style="pointer-events:none">
+              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
+              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
+              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
+            </div>
+            <div class="trending-card" style="pointer-events:none">
+              <div class="trending-card-poster"><div class="skeleton" style="width:100%;height:100%;border-radius:inherit"></div></div>
+              <div class="skeleton" style="height:12px;margin:8px 0 4px;border-radius:6px"></div>
+              <div class="skeleton" style="height:10px;width:50%;border-radius:6px"></div>
+            </div>
+          </div>
+          <button class="trending-btn trending-btn-next" aria-label="Next top rated movies">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Detail panel updates when a card is clicked -->
+        <div class="trending-detail-panel" id="toprated-detail" aria-live="polite" aria-label="Selected movie details">
+          <div class="tdp-left">
+            <p class="tdp-eyebrow">Top Rated #1</p>
+            <h3 class="tdp-title">Loading…</h3>
+            <div class="tdp-meta">
+              <span class="tdp-meta-item">
+                <svg viewBox="0 0 24 24" fill="#f4c542" width="14" height="14"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span class="tdp-rating-val">—</span>
+              </span>
+              <span class="tdp-meta-item tdp-year">—</span>
+              <span class="tdp-genre tdp-genre-tag"></span>
+            </div>
+            <p class="tdp-desc"></p>
+          </div>
+          <div class="tdp-right">
+            <a class="btn-primary tdp-watch-btn" href="#" aria-label="Watch now">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
+              Watch Now
+            </a>
+            <button class="btn-ghost tdp-wl-btn" aria-label="Add to watchlist">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              Watchlist
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ================================================================
-         SECTION 4 — HOW ARE YOU FEELING (image-based mood cards)
-         Key changes:
-         • Removed all emoji elements entirely
-         • Each card is a full-bleed image with cinematic gradient overlay
-         • Hover: image zooms, name + description slide up, CTA appears
-         • Local image paths under assets/images/moods/
-    ================================================================ -->
-    <section class="mood-section" aria-label="Browse by mood">
-      <div class="section-header reveal"
-           style="max-width:var(--max-w);margin:0 auto;padding:0 var(--space-8);margin-bottom:0">
-        <div class="section-title-group">
-          <p class="section-eyebrow">Personalized For You</p>
-          <h2 class="section-title">How Are You Feeling?</h2>
-          <p class="section-subtitle">We'll find the perfect film for your mood</p>
-        </div>
-        <a href="mood.html" class="section-see-all" aria-label="Go to mood recommendations">
-          All Moods
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </a>
-      </div>
-
-      <div class="mood-grid stagger-children" role="list">
-
-        <!-- Happy -->
-        <a href="mood.html?mood=happy"
-           class="mood-card"
-           style="--mood-accent:#fbbf24;--mood-border:rgba(251,191,36,0.5);--mood-glow:rgba(251,191,36,0.15)"
-           role="listitem"
-           aria-label="Happy mood — Light-hearted comedies">
-          <img class="mood-card-img "
-               src="assets/images/mood/happy.jpg"
-               alt="Happy mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Happy</div>
-            <p class="mood-card-desc">Light-hearted comedies &amp; feel-good stories</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-        <!-- Excited -->
-        <a href="mood.html?mood=excited"
-           class="mood-card"
-           style="--mood-accent:#ef4444;--mood-border:rgba(239,68,68,0.5);--mood-glow:rgba(239,68,68,0.15)"
-           role="listitem"
-           aria-label="Excited mood — Action-packed thrillers">
-          <img class="mood-card-img"
-               src="assets/images/mood/excited.jpg"
-               alt="Excited mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Excited</div>
-            <p class="mood-card-desc">Action-packed thrillers &amp; adrenaline rushes</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-        <!-- Relaxed -->
-        <a href="mood.html?mood=relaxed"
-           class="mood-card"
-           style="--mood-accent:#22d3a0;--mood-border:rgba(34,211,160,0.5);--mood-glow:rgba(34,211,160,0.12)"
-           role="listitem"
-           aria-label="Relaxed mood — Gentle dramas">
-          <img class="mood-card-img "
-               src="assets/images/mood/relaxed.jpg"
-               alt="Relaxed mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Relaxed</div>
-            <p class="mood-card-desc">Gentle dramas, nature docs &amp; slow cinema</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-        <!-- Curious -->
-        <a href="mood.html?mood=curious"
-           class="mood-card"
-           style="--mood-accent:#00d4c8;--mood-border:rgba(0,212,200,0.5);--mood-glow:rgba(0,212,200,0.12)"
-           role="listitem"
-           aria-label="Curious mood — Sci-fi and documentaries">
-          <img class="mood-card-img "
-               src="assets/images/mood/curious.jpg"
-               data-src="assets/images/moods/curious.jpg"
-               alt="Curious mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Curious</div>
-            <p class="mood-card-desc">Sci-fi, documentaries &amp; mind-bending tales</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-        <!-- Romantic -->
-        <a href="mood.html?mood=romantic"
-           class="mood-card"
-           style="--mood-accent:#ec4899;--mood-border:rgba(236,72,153,0.5);--mood-glow:rgba(236,72,153,0.12)"
-           role="listitem"
-           aria-label="Romantic mood — Love stories">
-          <img class="mood-card-img "
-               src="assets/images/mood/romantic.jpg"
-               data-src="assets/images/moods/romantic.jpg"
-               alt="Romantic mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Romantic</div>
-            <p class="mood-card-desc">Love stories that stay with you forever</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-        <!-- Reflective -->
-        <a href="mood.html?mood=sad"
-           class="mood-card"
-           style="--mood-accent:#8b5cf6;--mood-border:rgba(139,92,246,0.5);--mood-glow:rgba(139,92,246,0.12)"
-           role="listitem"
-           aria-label="Reflective mood — Emotional journeys">
-          <img class="mood-card-img"
-               src="assets/images/mood/reflective.jpg"
-               alt="Reflective mood">
-          <div class="mood-card-overlay"></div>
-          <div class="mood-card-content">
-            <div class="mood-card-name">Reflective</div>
-            <p class="mood-card-desc">Emotional journeys &amp; powerful narratives</p>
-            <span class="mood-card-cta">
-              Explore
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-          </div>
-        </a>
-
-      </div>
-    </section>
 
     <!-- ── NOW PLAYING (unchanged) ── -->
-    <section class="section" id="section-nowplaying" aria-label="Now playing in theaters">
+    <section class="section" id="section-nowplaying" aria-label="Recently added movies">
       <div class="section-header reveal">
         <div class="section-title-group">
-          <p class="section-eyebrow">In Cinemas Now</p>
-          <h2 class="section-title">Now Playing</h2>
-          <p class="section-subtitle">Fresh from the silver screen</p>
+          <p class="section-eyebrow">Just Added</p>
+          <h2 class="section-title">Recently Added</h2>
+          <p class="section-subtitle">The newest titles on CineVerse</p>
         </div>
-        <a href="movies.html?filter=now_playing" class="section-see-all" aria-label="See all now playing">
+        <a href="movie_page.html" class="section-see-all" aria-label="See all recently added">
           See All
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -1400,7 +1243,7 @@
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <div class="carousel-track" id="nowplaying-track" role="list" aria-label="Now playing movies"></div>
+        <div class="carousel-track" id="nowplaying-track" role="list" aria-label="Recently added movies"></div>
         <button class="carousel-btn carousel-btn-next" aria-label="Next">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
             <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -1478,14 +1321,14 @@
     </section>
 
     <!-- ── UPCOMING (unchanged) ── -->
-    <section class="section" id="section-upcoming" aria-label="Upcoming movies">
+    <section class="section" id="section-upcoming" aria-label="Latest movies">
       <div class="section-header reveal">
         <div class="section-title-group">
-          <p class="section-eyebrow">Coming Soon</p>
-          <h2 class="section-title">Upcoming Releases</h2>
-          <p class="section-subtitle">Mark your calendar — these are worth the wait</p>
+          <p class="section-eyebrow">New This Season</p>
+          <h2 class="section-title">Latest Releases</h2>
+          <p class="section-subtitle">Fresh films added to the collection</p>
         </div>
-        <a href="movies.html?filter=upcoming" class="section-see-all" aria-label="See all upcoming">
+        <a href="movie_page.html" class="section-see-all" aria-label="See all latest">
           See All
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -1498,7 +1341,7 @@
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <div class="carousel-track" id="upcoming-track" role="list" aria-label="Upcoming movies"></div>
+        <div class="carousel-track" id="upcoming-track" role="list" aria-label="Latest movies"></div>
         <button class="carousel-btn carousel-btn-next" aria-label="Next">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
             <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -1538,21 +1381,21 @@
           <div class="footer-col">
             <h3 class="footer-col-title">Explore</h3>
             <ul class="footer-col-links">
-              <li><a href="movies.html"     class="footer-col-link">All Movies</a></li>
-              <li><a href="movies.html?filter=trending" class="footer-col-link">Trending</a></li>
-              <li><a href="movies.html?filter=top_rated" class="footer-col-link">Top Rated</a></li>
-              <li><a href="movies.html?filter=now_playing" class="footer-col-link">Now Playing</a></li>
-              <li><a href="movies.html?filter=upcoming" class="footer-col-link">Upcoming</a></li>
+              <li><a href="movie_page.html"     class="footer-col-link">All Movies</a></li>
+              <li><a href="movie_page.html?filter=trending" class="footer-col-link">Trending</a></li>
+              <li><a href="movie_page.html?filter=top_rated" class="footer-col-link">Top Rated</a></li>
+              <li><a href="movie_page.html?filter=recently_added" class="footer-col-link">Now Playing</a></li>
+              <li><a href="movie_page.html?filter=latest" class="footer-col-link">Upcoming</a></li>
             </ul>
           </div>
           <div class="footer-col">
             <h3 class="footer-col-title">Genres</h3>
             <ul class="footer-col-links">
-              <li><a href="movies.html?genre=28"  class="footer-col-link">Action</a></li>
-              <li><a href="movies.html?genre=35"  class="footer-col-link">Comedy</a></li>
-              <li><a href="movies.html?genre=18"  class="footer-col-link">Drama</a></li>
-              <li><a href="movies.html?genre=878" class="footer-col-link">Sci-Fi</a></li>
-              <li><a href="movies.html?genre=27"  class="footer-col-link">Horror</a></li>
+              <li><a href="movie_page.html?genre=Action"  class="footer-col-link">Action</a></li>
+              <li><a href="movie_page.html?genre=Comedy"  class="footer-col-link">Comedy</a></li>
+              <li><a href="movie_page.html?genre=Drama"  class="footer-col-link">Drama</a></li>
+              <li><a href="movie_page.html?genre=Sci-Fi" class="footer-col-link">Sci-Fi</a></li>
+              <li><a href="movie_page.html?genre=4"  class="footer-col-link">Horror</a></li>
             </ul>
           </div>
           <div class="footer-col">
@@ -1560,25 +1403,24 @@
             <ul class="footer-col-links">
               <li><a href="watchlist.html"     class="footer-col-link">Watchlist</a></li>
               <li><a href="favorites.html"     class="footer-col-link">Favorites</a></li>
-              <li><a href="history.html"       class="footer-col-link">History</a></li>
-              <li><a href="recommendations.html" class="footer-col-link">For You</a></li>
-              <li><a href="mood.html"          class="footer-col-link">Mood Pick</a></li>
+              
+              <li><a href="ai_recommendations.html" class="footer-col-link">AI Recommendations</a></li>
+              
             </ul>
           </div>
           <div class="footer-col">
             <h3 class="footer-col-title">Company</h3>
             <ul class="footer-col-links">
               <li><a href="#" class="footer-col-link">About Us</a></li>
-              <li><a href="#" class="footer-col-link">Careers</a></li>
-              <li><a href="#" class="footer-col-link">Press</a></li>
-              <li><a href="#" class="footer-col-link">Blog</a></li>
+              
+              
               <li><a href="#" class="footer-col-link">Contact</a></li>
             </ul>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p class="footer-copy">© 2025 <span>CineVerse</span>. All rights reserved. Movie data provided by TMDB.</p>
+        <p class="footer-copy">© 2026 <span>CineVerse</span>. All rights reserved.</p>
         <nav class="footer-legal" aria-label="Legal links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>
@@ -1632,5 +1474,10 @@
       });
     });
   </script>
+
+
+ <!-- These scripts are for the enhanced favorites and watchlist functionality -->
+<script src="js/cv-api.js"></script>
+<script src="js/cv-patch.js"></script>
 </body>
 </html>

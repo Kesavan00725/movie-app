@@ -1,0 +1,234 @@
+/* ================================================================
+   CINEVERSE — watchlist.css
+   Teal/blue accent variant of favorites.css.
+================================================================ */
+
+/* ── Import all shared fwl styles from favorites.css ── */
+/* (Both pages load this file separately so we redeclare all styles) */
+
+.fwl-hero {
+  position: relative;
+  padding: 120px 0 64px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.fwl-hero__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(34,211,160,0.1) 0%, transparent 70%),
+    linear-gradient(to bottom, var(--bg-deep, #080810) 0%, var(--bg-void, #040408) 100%);
+}
+
+.fwl-hero__glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+.fwl-hero__glow--teal {
+  width: 600px; height: 400px;
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(34,211,160,0.14) 0%, transparent 70%);
+}
+
+.fwl-hero__glow--gold {
+  width: 300px; height: 200px;
+  top: 0; right: 15%;
+  background: radial-gradient(ellipse, rgba(232,168,56,0.08) 0%, transparent 70%);
+}
+
+.fwl-hero__inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: fwlFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fwl-hero__icon {
+  width: 72px; height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34,211,160,0.08);
+  border: 1.5px solid rgba(34,211,160,0.25);
+  border-radius: 50%;
+  color: var(--success, #22d3a0);
+  margin-bottom: 8px;
+  animation: fwlPulse 3s ease-in-out infinite;
+}
+
+.fwl-hero__title {
+  font-family: var(--font-display, 'Bebas Neue', sans-serif);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  letter-spacing: 0.08em;
+  color: var(--white, #fff);
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 0%, rgba(34,211,160,0.85) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fwl-hero__subtitle {
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.fwl-hero__count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--success, #22d3a0);
+  padding: 4px 14px;
+  background: rgba(34,211,160,0.1);
+  border: 1px solid rgba(34,211,160,0.2);
+  border-radius: 100px;
+}
+
+.fwl-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 32px 80px;
+  min-height: 50vh;
+}
+
+.fwl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 640px)  { .fwl-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
+@media (min-width: 1024px) { .fwl-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 28px; } }
+
+.fwl-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fwl-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: fwlShimmer 1.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.fwl-skeleton--poster { aspect-ratio: 2 / 3; border-radius: 12px; }
+.fwl-skeleton--title  { height: 14px; width: 80%; border-radius: 6px; }
+.fwl-skeleton--meta   { height: 12px; width: 50%; border-radius: 6px; }
+
+.fwl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 24px;
+  text-align: center;
+  animation: fwlFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fwl-empty__icon {
+  width: 100px; height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 50%;
+  color: rgba(34,211,160,0.4);
+  margin-bottom: 8px;
+}
+
+.fwl-empty__title {
+  font-family: var(--font-display, 'Bebas Neue', sans-serif);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: 0.06em;
+  color: var(--white, #fff);
+}
+
+.fwl-empty__subtitle {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.7;
+  max-width: 36ch;
+}
+
+.fwl-browse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #22d3a0, #34d399);
+  color: #0a0a0f;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 100px;
+  transition: transform 0.25s, box-shadow 0.25s, filter 0.25s;
+}
+
+.fwl-browse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34,211,160,0.3);
+  filter: brightness(1.08);
+}
+
+.site-footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 32px;
+  text-align: center;
+}
+
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo { display: flex; align-items: center; gap: 8px; }
+.footer-copy { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+
+@keyframes fwlFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fwlShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes fwlPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,211,160,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(34,211,160,0.08); }
+}
+
+@media (max-width: 640px) {
+  .fwl-main { padding: 32px 16px 60px; }
+  .fwl-hero { padding: 100px 0 48px; }
+  .fwl-grid { gap: 16px; }
+}

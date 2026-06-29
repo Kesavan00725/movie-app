@@ -5,7 +5,8 @@ from movie_backend.database.database import get_db
 from movie_backend.util.helpers import verify_token
  
 from movie_backend.schemas.watchlist_schema import (
-    WatchlistResponse
+    WatchlistResponse,
+    AllWatchlistResponse
 )
  
 from movie_backend.schemas.response_schema import (
@@ -17,7 +18,8 @@ from movie_backend.services.watchlist_service import (
     remove_watchlist_service,
     get_watchlist_service
 )
- 
+from typing import List
+
 router = APIRouter(
     prefix="/watchlist",
     tags=["Watchlist"]

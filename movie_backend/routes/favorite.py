@@ -6,12 +6,14 @@ from movie_backend.util.helpers import verify_token
 from movie_backend.util.helpers import rate_limit
 
 from movie_backend.schemas.favorite_schema import (
-    FavoriteResponse
+    FavoriteResponse,
+    AllFavoriteResponse
 )
 
 from movie_backend.schemas.response_schema import (
     MessageResponse
 )
+from typing import List
 
 from movie_backend.services.favorite_service import (
     add_favorite_service,

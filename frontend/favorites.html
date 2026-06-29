@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVerse — My Favorites</title>
+
+  <!-- Google Fonts (same as rest of project) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Existing project stylesheets -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar_home.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <!-- Favorites-specific -->
+  <link rel="stylesheet" href="css/favorites.css">
+</head>
+<body>
+
+  <!-- Noise overlay -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <!-- Page transition -->
+  <div id="page-transition" aria-hidden="true"></div>
+  <!-- Toast -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="home.html" class="nav-logo" aria-label="CineVerse Home">
+        <div class="nav-logo-mark" aria-hidden="true">C</div>
+        <span class="nav-logo-text">CINE<span>VERSE</span></span>
+      </a>
+      <div class="nav-links" role="list">
+        <a href="home.html"        class="nav-link" role="listitem">Home</a>
+        <a href="movie_page.html"  class="nav-link" role="listitem">Movies</a>
+        <a href="watchlist.html"   class="nav-link" role="listitem">Watchlist</a>
+        <a href="favorites.html"   class="nav-link active" role="listitem" aria-current="page">Favorites</a>
+        <a href="ai_recommendations.html" class="nav-link" role="listitem">AI Recommendations</a>
+      </div>
+      <div class="nav-actions">
+<<<<<<< HEAD
+        
+        <div class="nav-avatar" id="nav-avatar" role="button" aria-label="User menu" tabindex="0">?</div>
+=======
+        <button class="nav-search-btn" aria-label="Open search" id="nav-search-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Search</span>
+        </button>
+        <div class="profile-menu-container">
+
+    <div class="nav-avatar"
+         id="profile-btn"
+         role="button"
+         tabindex="0"
+         aria-haspopup="true">
+
+        A
+
+    </div>
+
+    <div class="profile-dropdown" id="profile-dropdown">
+
+        <div class="profile-header">
+
+            <div class="profile-avatar" id="dropdown-avatar">
+                A
+            </div>
+
+            <div>
+
+                <h4 id="dropdown-name">Guest</h4>
+
+                <p id="dropdown-email">
+                    guest@example.com
+                </p>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <a href="profile.html">
+
+            👤 My Profile
+
+        </a>
+
+        <a href="favorites.html">
+
+            ❤️ Favorites
+
+        </a>
+
+        <a href="watchlist.html">
+
+            🎬 Watchlist
+
+        </a>
+
+        <button id="logout-btn">
+
+            🚪 Logout
+
+        </button>
+
+    </div>
+
+</div>
+>>>>>>> cbb5a8b438bc60efcc1945202dbce83a4fe51daa
+        <div class="nav-hamburger" id="nav-hamburger" role="button" aria-label="Toggle menu" aria-expanded="false" tabindex="0">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-mobile-drawer" id="nav-mobile-drawer" aria-label="Mobile navigation">
+      <a href="home.html"       class="nav-mobile-link">Home</a>
+      <a href="movie_page.html" class="nav-mobile-link">Movies</a>
+      <a href="watchlist.html"  class="nav-mobile-link">Watchlist</a>
+      <a href="favorites.html"  class="nav-mobile-link active">Favorites</a>
+      <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>
+    </nav>
+  </nav>
+
+  <!-- ============ PAGE HERO ============ -->
+  <header class="fwl-hero" id="page-hero">
+    <div class="fwl-hero__bg" aria-hidden="true"></div>
+    <div class="fwl-hero__glow fwl-hero__glow--gold" aria-hidden="true"></div>
+    <div class="fwl-hero__glow fwl-hero__glow--purple" aria-hidden="true"></div>
+    <div class="fwl-hero__inner">
+      <div class="fwl-hero__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <h1 class="fwl-hero__title">My Favorites</h1>
+      <p class="fwl-hero__subtitle">Movies You Love</p>
+      <div class="fwl-hero__count" id="fav-count" aria-live="polite">— films</div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="fwl-main">
+
+    <!-- Loading skeletons -->
+    <div class="fwl-grid" id="skeleton-grid" aria-hidden="true">
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      <div class="fwl-skeleton-card" aria-hidden="true"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+    </div>
+
+    <!-- Movies grid -->
+    <div class="fwl-grid" id="fav-grid" style="display:none" role="list" aria-label="Favorite movies"></div>
+
+    <!-- Empty state -->
+    <div class="fwl-empty" id="fav-empty" style="display:none">
+      <div class="fwl-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <h2 class="fwl-empty__title">No Favorites Yet</h2>
+      <p class="fwl-empty__subtitle">Movies you love will appear here.<br>Start exploring and add films to your favorites.</p>
+      <a href="movie_page.html" class="fwl-browse-btn">Browse Movies</a>
+    </div>
+
+    <!-- Auth required state -->
+    <div class="fwl-empty" id="fav-auth" style="display:none">
+      <div class="fwl-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="fwl-empty__title">Sign In Required</h2>
+      <p class="fwl-empty__subtitle">Please sign in to view your personalized favorites.</p>
+      <a href="login.html" class="fwl-browse-btn">Sign In</a>
+    </div>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="nav-logo-mark">C</div>
+        <span class="nav-logo-text">CINE<span>VERSE</span></span>
+      </div>
+      <p class="footer-copy">© 2025 CineVerse. Your universe of cinema, curated.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/cv-api.js"></script>
+  <script src="js/favorites.js"></script>
+</body>
+</html>

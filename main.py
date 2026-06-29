@@ -20,7 +20,6 @@ from movie_backend.routes.profile import router as profile
 
 
 
-# Import models so SQLAlchemy registers them
 from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
 from movie_backend.models.movie import Movie
@@ -58,15 +57,13 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:8080",
         "http://localhost:8080",
-        "https://movie-app-frontend-2o9t.onrender.com",
+        "https://cineverse-movie-app-1.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-@app.middleware("http")
 async def log_requests(request: Request, call_next):
     start = time.perf_counter()
 
@@ -83,8 +80,7 @@ async def log_requests(request: Request, call_next):
 async def root():
     return {
         "message": "Movie API is running",
-        "frontend": "/app/login.html",
-        "docs": "/scalar",
+        "docs": "/scalar"
     }
 
 
@@ -96,7 +92,7 @@ def scalar():
     )
 
 
-# Routers
+
 app.include_router(auth)
 app.include_router(movies)
 app.include_router(genres)

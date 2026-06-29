@@ -6,7 +6,7 @@
 
 'use strict';
 
-const API_BASE = 'https://movie-app-qhzc.onrender.com';
+const API_BASE = 'https://cineverse-movie-app.onrender.com';
 const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450"><rect width="300" height="450" fill="#0f1530"/><text x="150" y="220" text-anchor="middle" fill="#ffffff20" font-size="48">🎬</text><text x="150" y="270" text-anchor="middle" fill="#ffffff15" font-size="14">No Image</text></svg>'
 );
@@ -23,7 +23,8 @@ let similarMovies = [];
 
 /* ── Auth token ── */
 function getToken() {
-  return localStorage.getItem('cv_token') || '';
+  // login.js stores the token under 'access_token'
+  return localStorage.getItem('access_token') || '';
 }
 
 /* ── Helpers ── */
@@ -159,22 +160,17 @@ async function getMovieDetails(id) {
 }
 
 async function getSimilarMovies(genreName, currentId) {
-  // Try paginated endpoint first
   try {
-    const data = await apiGet('/movies/', { page: 1, limit: 20 });
+    // Use backend filter endpoint to fetch movies of the same genre directly
+    const data = await apiGet('/movies/filter/', {
+      genre: genreName,
+      page: 1,
+      limit: 50,
+    });
     const list = Array.isArray(data) ? data : (data?.results || data?.items || data?.movies || []);
-    // Filter by same genre, exclude current
-    const sameGenre = list.filter(m =>
-      String(m.id) !== String(currentId) &&
-      m.genre?.name?.toLowerCase() === genreName?.toLowerCase()
-    );
-    // If not enough same-genre, pad with other movies
-    if (sameGenre.length >= 3) return sameGenre.slice(0, 6);
-    const others = list.filter(m =>
-      String(m.id) !== String(currentId) &&
-      !sameGenre.find(s => s.id === m.id)
-    );
-    return [...sameGenre, ...others].slice(0, 6);
+    // Exclude the current movie
+    const sameGenre = list.filter(m => String(m.id) !== String(currentId));
+    return sameGenre.slice(0, 6);
   } catch {
     return [];
   }
@@ -802,12 +798,12 @@ function buildReviewCard(review, idx) {
         <div style="display:flex;align-items:center;gap:var(--space-4);flex-shrink:0;">
           <div class="review-date">${date}</div>
           ${isOwn ? `<div class="review-actions-row">
-            <button class="review-action-btn edit-review" data-id="${reviewId}" data-rating="${stars}" data-text="${escHtml(review.review || review.text || '')}">Edit</button>
+            <button class="review-action-btn edit-review" data-id="${reviewId}" data-rating="${stars}" data-text="${escHtml(review.content || '')}">Edit</button>
             <button class="review-action-btn delete delete-review" data-id="${reviewId}">Delete</button>
           </div>` : ''}
         </div>
       </div>
-      <p class="review-text">${escHtml(review.review || review.text || '')}</p>
+      <p class="review-text">${escHtml(review.content || '')}</p>
     </div>
   `;
 }
@@ -842,10 +838,11 @@ function checkReviewsEmpty() {
 document.addEventListener('DOMContentLoaded', () => {
   el('btn-write-review')?.addEventListener('click', () => {
     if (!getToken()) {
-      openReviewForm(false);
-      el('review-auth-note')?.classList.remove('hidden');
+      showToast('Please sign in to write a review.', 'error');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1200);
       return;
     }
+    el('review-auth-note')?.classList.add('hidden');
     openReviewForm(false);
   });
 
@@ -865,10 +862,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (submitBtn) { submitBtn.textContent = 'Submitting…'; submitBtn.disabled = true; }
       if (editId) {
-        await apiPatch(`/reviews/${editId}`, { review: text, rating: currentRating });
+        await apiPatch(`/reviews/${editId}`, { content: text, rating: currentRating });
         showToast('Review updated!', 'success');
       } else {
-        await apiPost(`/reviews/${movieId}`, { review: text, rating: currentRating });
+        await apiPost(`/reviews/${movieId}`, { content: text, rating: currentRating });
         showToast('Review posted!', 'success');
       }
       el('review-form-wrap')?.classList.add('hidden');
@@ -927,13 +924,12 @@ function initNav() {
     drawer?.classList.toggle('open');
   });
 
-  const user = localStorage.getItem('cv_user');
-  if (user) {
-    try {
-      const u      = JSON.parse(user);
-      const avatar = el('nav-avatar');
-      if (avatar)  avatar.textContent = (u.name || u.email || 'U')[0].toUpperCase();
-    } catch {}
+  // login.js stores name/email as flat strings under 'user_name' and 'user_email'
+  const userName  = localStorage.getItem('user_name');
+  const userEmail = localStorage.getItem('user_email');
+  const avatar    = el('nav-avatar');
+  if (avatar && (userName || userEmail)) {
+    avatar.textContent = (userName || userEmail || 'U')[0].toUpperCase();
   }
 }
 
@@ -1014,3 +1010,130 @@ function showToast(msg, type = '') {
     setTimeout(() => toast.remove(), 300);
   }, 2800);
 }
+const profileBtn =
+document.getElementById(
+'profile-btn'
+);
+
+
+const dropdown =
+document.getElementById(
+'profile-dropdown'
+);
+
+
+profileBtn.onclick=()=>{
+
+dropdown.classList.toggle(
+'active'
+);
+
+};
+
+
+
+document.addEventListener(
+
+'click',
+
+e=>{
+
+if(
+
+!profileBtn.contains(e.target)
+
+&&
+
+!dropdown.contains(e.target)
+
+){
+
+dropdown.classList.remove(
+
+'active'
+
+);
+
+}
+
+}
+
+);
+
+
+
+const username=
+
+localStorage.getItem(
+
+'user_name'
+
+)||'Guest';
+
+
+
+const email=
+
+localStorage.getItem(
+
+'user_email'
+
+)||'';
+
+
+
+document.getElementById(
+
+'dropdown-name'
+
+).textContent=username;
+
+
+
+document.getElementById(
+
+'dropdown-email'
+
+).textContent=email;
+
+
+
+const initial=
+
+username.charAt(
+
+0
+
+).toUpperCase();
+
+
+
+profileBtn.textContent=initial;
+
+
+
+document.getElementById(
+
+'dropdown-avatar'
+
+).textContent=initial;
+
+
+
+document.getElementById(
+
+'logout-btn'
+
+).onclick=()=>{
+
+
+localStorage.clear();
+
+
+
+window.location.href=
+
+'login.html';
+
+
+};

@@ -776,7 +776,10 @@ img { display: block; }
   background: var(--bg-deep);
 }
 .carousel-wrap {
-  position: relative; overflow: hidden;
+  position: relative;
+  /* Allow vertical overflow for card hover lift; hide only horizontal */
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 .carousel-wrap::before, .carousel-wrap::after {
   content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2;
@@ -790,6 +793,9 @@ img { display: block; }
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
   padding: var(--space-3) var(--space-8) var(--space-8);
   cursor: grab; scroll-behavior: smooth;
+  /* Allow card hover to pop up without clipping */
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-10);
 }
 .carousel-track:active { cursor: grabbing; }
 .carousel-track::-webkit-scrollbar { display: none; }
@@ -962,8 +968,48 @@ img { display: block; }
 .reviews-empty-icon { font-size: 2.5rem; margin-bottom: var(--space-4); }
 
 /* ════════════════════════════════════════════
-   CAST
+   AI REVIEW SUMMARY
 ════════════════════════════════════════════ */
+.review-summary-section {
+  padding: 0 0 var(--space-20);
+  background: var(--bg-void);
+}
+.review-summary-card {
+  max-width: 780px;
+  padding: var(--space-8);
+  background: linear-gradient(135deg, rgba(232,168,56,0.06) 0%, var(--glass-bg) 100%);
+  border: 1px solid rgba(232,168,56,0.2);
+  border-radius: var(--radius-2xl);
+  backdrop-filter: var(--glass-blur-sm);
+  position: relative; overflow: hidden;
+}
+.review-summary-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+}
+.review-summary-header {
+  display: flex; align-items: center; gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.review-summary-icon {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: var(--gold-trace); border: 1px solid rgba(232,168,56,0.2);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+}
+.review-summary-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl); letter-spacing: var(--tracking-wide);
+  color: var(--white); line-height: 1;
+}
+.review-summary-text {
+  font-family: var(--font-editorial);
+  font-size: var(--text-lg); line-height: 1.8;
+  color: var(--white-60); letter-spacing: 0.01em;
+}
+
+
 .cast-section {
   padding: var(--space-20) 0;
   background: var(--bg-deep);
@@ -1332,4 +1378,195 @@ img { display: block; }
 /* FIX 10: gallery section never collapses */
 .gallery-section {
   min-height: 200px;
+}
+.profile-menu-container{
+
+position:relative;
+
+}
+
+
+
+.profile-dropdown{
+
+position:absolute;
+
+top:50px;
+
+right:0;
+
+width:260px;
+
+background:rgba(18,18,25,.96);
+
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(232,168,56,.15);
+
+border-radius:18px;
+
+padding:15px;
+
+display:none;
+
+z-index:9999;
+
+box-shadow:
+
+0 20px 50px rgba(0,0,0,.6),
+
+0 0 25px rgba(232,168,56,.12);
+
+}
+
+
+
+.profile-dropdown.active{
+
+display:block;
+
+animation:fade .25s ease;
+
+}
+
+
+
+.profile-header{
+
+display:flex;
+
+gap:12px;
+
+align-items:center;
+
+margin-bottom:10px;
+
+}
+
+
+
+.profile-avatar{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+background:linear-gradient(
+
+135deg,
+
+#e8a838,
+
+#f6d365
+
+);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-weight:700;
+
+color:black;
+
+}
+
+
+
+.profile-dropdown h4{
+
+font-size:14px;
+
+color:white;
+
+}
+
+
+
+.profile-dropdown p{
+
+font-size:12px;
+
+color:#888;
+
+}
+
+
+
+.profile-dropdown hr{
+
+border:none;
+
+height:1px;
+
+background:rgba(255,255,255,.08);
+
+margin:12px 0;
+
+}
+
+
+
+.profile-dropdown a,
+
+.profile-dropdown button{
+
+display:block;
+
+width:100%;
+
+padding:12px;
+
+border-radius:12px;
+
+text-align:left;
+
+background:none;
+
+border:none;
+
+color:white;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+
+
+.profile-dropdown a:hover,
+
+.profile-dropdown button:hover{
+
+background:rgba(232,168,56,.1);
+
+color:#e8a838;
+
+}
+
+
+
+@keyframes fade{
+
+from{
+
+opacity:0;
+
+transform:translateY(-8px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:none;
+
+}
+
 }
