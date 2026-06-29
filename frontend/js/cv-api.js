@@ -528,106 +528,71 @@ var CV_Watchlist = {
   }
 
 };
-// ── CV_WatchHistory ───────────────────────────
-// Watch History API
+/* ================================================================
+   APPEND THIS BLOCK TO THE BOTTOM OF js/cv-api.js
+   ================================================================
+   CV_WatchHistory — mirrors CV_Favorites / CV_Watchlist pattern.
+   Uses Authorization Bearer token exactly like the rest of cv-api.js.
+================================================================ */
 
 var CV_WatchHistory = {
 
-  // Get complete watch history
+  /* GET /watch-history/ → [{id, user_id, movie_id, watched_at, progress, completed}] */
   getHistory: async function () {
-
-    const res = await fetch(CV_BASE + '/watch-history/', {
+    var res = await fetch(CV_BASE + '/watch-history/', {
       headers: cvAuthHeaders()
     });
-
-    if (res.status === 401) {
-      cvHandle401();
-      return [];
-    }
-
+    if (res.status === 401) { cvHandle401(); return []; }
     return res.ok ? res.json() : [];
-
   },
 
-  // Continue Watching
+  /* GET /watch-history/continue-watching → in-progress items only */
   getContinueWatching: async function () {
-
-    const res = await fetch(CV_BASE + '/watch-history/continue-watching', {
+    var res = await fetch(CV_BASE + '/watch-history/continue-watching', {
       headers: cvAuthHeaders()
     });
-
-    if (res.status === 401) {
-      cvHandle401();
-      return [];
-    }
-
+    if (res.status === 401) { cvHandle401(); return []; }
     return res.ok ? res.json() : [];
-
   },
 
-  // Get one movie progress
+  /* GET /watch-history/{movie_id} → single progress record */
   getMovieProgress: async function (movieId) {
-
-    const res = await fetch(
-      CV_BASE + '/watch-history/' + movieId,
-      {
-        headers: cvAuthHeaders()
-      }
-    );
-
-    if (res.status === 401) {
-      cvHandle401();
-      return null;
-    }
-
-    return res.ok ? res.json() : null;
-
-  },
-
-  // Create / Update watch history
-  updateProgress: async function (
-    movieId,
-    progress = 0,
-    completed = false
-  ) {
-
-    return await fetch(CV_BASE + '/watch-history/', {
-
-      method: 'POST',
-
-      headers: {
-        ...cvAuthHeaders(),
-        'Content-Type': 'application/json'
-      },
-
-      body: JSON.stringify({
-
-        movie_id: movieId,
-
-        progress: progress,
-
-        completed: completed
-
-      })
-
+    var res = await fetch(CV_BASE + '/watch-history/' + movieId, {
+      headers: cvAuthHeaders()
     });
-
+    if (res.status === 401) { cvHandle401(); return null; }
+    return res.ok ? res.json() : null;
   },
 
-  // Mark completed
+  /* POST /watch-history/ — create or update progress
+     Body: { movie_id, progress, completed }
+  */
+  updateProgress: async function (movieId, progress, completed) {
+    var res = await fetch(CV_BASE + '/watch-history/', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + cvToken()
+      },
+      body: JSON.stringify({
+        movie_id:  movieId,
+        progress:  progress,
+        completed: completed || false
+      })
+    });
+    if (res.status === 401) { cvHandle401(); return null; }
+    return res.ok ? res.json() : null;
+  },
+
+  /* PATCH /watch-history/{movie_id}/complete */
   markCompleted: async function (movieId) {
-
-    return await fetch(
-      CV_BASE + '/watch-history/' + movieId + '/complete',
-      {
-
-        method: 'PATCH',
-
-        headers: cvAuthHeaders()
-
-      }
-    );
-
+    var res = await fetch(CV_BASE + '/watch-history/' + movieId + '/complete', {
+      method: 'PATCH',
+      headers: cvAuthHeaders()
+    });
+    if (res.status === 401) { cvHandle401(); return null; }
+    return res.ok;
   }
 
 };

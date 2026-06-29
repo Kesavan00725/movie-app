@@ -96,31 +96,7 @@ async function apiPatch(path, body = {}) {
    WATCH HISTORY
 ================================================================ */
 
-async function updateWatchHistory(progress = 0, completed = false) {
 
-  if (!getToken() || !movieId) return;
-
-  try {
-
-    await CV_WatchHistory.updateProgress(
-
-      Number(movieId),
-
-      progress,
-
-      completed
-
-    );
-
-  }
-
-  catch (err) {
-
-    console.warn("Watch history update failed", err);
-
-  }
-
-}
 function escHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -591,6 +567,32 @@ function getYouTubeId(url) {
   if (!url) return null;
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
+}
+
+/* ================================================================
+   WATCH HISTORY — POST /watch-history/
+   Called on trailer open and during video playback.
+================================================================ */
+async function updateWatchHistory(progressSecs, completed) {
+  if (!getToken() || !movieId) return;
+  try {
+    await fetch('https://cineverse-movie-app.onrender.com/watch-history/', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        movie_id:  Number(movieId),
+        progress:  progressSecs || 0,
+        completed: completed || false
+      })
+    });
+  } catch (e) {
+    /* non-fatal — watch history is a background task */
+    console.warn('[WH] updateWatchHistory failed:', e.message);
+  }
 }
 
 function openTrailer() {
