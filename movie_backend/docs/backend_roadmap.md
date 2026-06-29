@@ -51,10 +51,10 @@
 
 * Change Password (with otp Redis)✅
 * Rate Limit using Redis✅
-* Redis Catch
+* Redis Caching
 * testing
 * CD Pipeline(Render) ✅
-* CI Pipeline(Render)
+* CI (GitHub Actions)
 * AWS Deployment
 * CI/CD for AWS
 * Monitoring
