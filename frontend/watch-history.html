@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVerse — Watch History</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar_home.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/watch-history.css">
+</head>
+<body>
+
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div id="page-transition" aria-hidden="true"></div>
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="home.html" class="nav-logo" aria-label="CineVerse Home">
+        <div class="nav-logo-mark" aria-hidden="true">C</div>
+        <span class="nav-logo-text">CINE<span>VERSE</span></span>
+      </a>
+      <div class="nav-links" role="list">
+        <a href="home.html"        class="nav-link" role="listitem">Home</a>
+        <a href="movie_page.html"  class="nav-link" role="listitem">Movies</a>
+        <a href="watchlist.html"   class="nav-link" role="listitem">Watchlist</a>
+        <a href="favorites.html"   class="nav-link" role="listitem">Favorites</a>
+        <a href="watch-history.html" class="nav-link active" role="listitem" aria-current="page">History</a>
+        <a href="ai_recommendations.html" class="nav-link" role="listitem">AI Recommendations</a>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-search-btn" aria-label="Open search" id="nav-search-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Search</span>
+        </button>
+        <div class="profile-menu-container">
+          <div class="nav-avatar" id="profile-btn" role="button" tabindex="0" aria-haspopup="true">A</div>
+          <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-header">
+              <div class="profile-avatar" id="dropdown-avatar">A</div>
+              <div>
+                <h4 id="dropdown-name">Guest</h4>
+                <p id="dropdown-email">guest@example.com</p>
+              </div>
+            </div>
+            <hr>
+            <a href="profile.html">👤 My Profile</a>
+            <a href="favorites.html">❤️ Favorites</a>
+            <a href="watchlist.html">🎬 Watchlist</a>
+            <a href="watch-history.html">🕐 Watch History</a>
+            <button id="logout-btn">🚪 Logout</button>
+          </div>
+        </div>
+        <div class="nav-hamburger" id="nav-hamburger" role="button" aria-label="Toggle menu" aria-expanded="false" tabindex="0">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-mobile-drawer" id="nav-mobile-drawer" aria-label="Mobile navigation">
+      <a href="home.html"          class="nav-mobile-link">Home</a>
+      <a href="movie_page.html"    class="nav-mobile-link">Movies</a>
+      <a href="watchlist.html"     class="nav-mobile-link">Watchlist</a>
+      <a href="favorites.html"     class="nav-mobile-link">Favorites</a>
+      <a href="watch-history.html" class="nav-mobile-link active">History</a>
+      <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>
+    </nav>
+  </nav>
+
+  <!-- ============ PAGE HERO ============ -->
+  <header class="fwl-hero" id="page-hero">
+    <div class="fwl-hero__bg wh-hero-bg" aria-hidden="true"></div>
+    <div class="fwl-hero__glow wh-hero-glow--blue"   aria-hidden="true"></div>
+    <div class="fwl-hero__glow wh-hero-glow--gold"   aria-hidden="true"></div>
+    <div class="fwl-hero__inner">
+      <div class="fwl-hero__icon wh-hero-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="44" height="44">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <h1 class="fwl-hero__title">Watch History</h1>
+      <p class="fwl-hero__subtitle">Continue your cinematic journey where you left off</p>
+      <div class="fwl-hero__count wh-count" id="wh-count" aria-live="polite">— films</div>
+    </div>
+  </header>
+
+  <!-- ============ STATISTICS ============ -->
+  <section class="wh-stats-section" id="wh-stats-section" aria-label="Watch statistics">
+    <div class="wh-stats-grid stagger-children" id="wh-stats-grid">
+      <div class="wh-stat-card">
+        <div class="wh-stat-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="wh-stat-card__value count-up" id="stat-watched">0</div>
+        <div class="wh-stat-card__label">Movies Watched</div>
+      </div>
+      <div class="wh-stat-card">
+        <div class="wh-stat-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </div>
+        <div class="wh-stat-card__value count-up" id="stat-continue">0</div>
+        <div class="wh-stat-card__label">Continue Watching</div>
+      </div>
+      <div class="wh-stat-card">
+        <div class="wh-stat-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="wh-stat-card__value count-up" id="stat-completed">0</div>
+        <div class="wh-stat-card__label">Completed</div>
+      </div>
+      <div class="wh-stat-card">
+        <div class="wh-stat-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="wh-stat-card__value" id="stat-time">0h</div>
+        <div class="wh-stat-card__label">Total Watch Time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="fwl-main">
+
+    <!-- ── Continue Watching Section ── -->
+    <section class="wh-section" id="wh-continue-section" style="display:none" aria-label="Continue watching">
+      <div class="wh-section__head">
+        <h2 class="wh-section__title">
+          <span class="wh-section__title-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </span>
+          Continue Watching
+        </h2>
+        <div class="wh-carousel-nav" aria-label="Carousel navigation">
+          <button class="wh-carousel-btn" id="carousel-prev" aria-label="Previous">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="wh-carousel-btn" id="carousel-next" aria-label="Next">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="wh-carousel-wrap">
+        <div class="wh-carousel" id="wh-carousel" role="list" aria-label="Continue watching movies"></div>
+      </div>
+    </section>
+
+    <!-- ── Watch History Section ── -->
+    <section class="wh-section" id="wh-history-section" aria-label="Watch history">
+      <div class="wh-section__head">
+        <h2 class="wh-section__title">
+          <span class="wh-section__title-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          All Watch History
+        </h2>
+      </div>
+
+      <!-- Skeletons -->
+      <div class="fwl-grid" id="wh-skeleton-grid" aria-hidden="true">
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+        <div class="fwl-skeleton-card"><div class="fwl-skeleton fwl-skeleton--poster"></div><div class="fwl-skeleton fwl-skeleton--title"></div><div class="fwl-skeleton fwl-skeleton--meta"></div></div>
+      </div>
+
+      <!-- History grid -->
+      <div class="fwl-grid" id="wh-grid" style="display:none" role="list" aria-label="Watch history movies"></div>
+
+      <!-- Empty state -->
+      <div class="fwl-empty" id="wh-empty" style="display:none">
+        <div class="fwl-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h2 class="fwl-empty__title">No Watch History Yet</h2>
+        <p class="fwl-empty__subtitle">Start watching movies to build your history.<br>Your cinematic journey begins here.</p>
+        <a href="movie_page.html" class="fwl-browse-btn">Browse Movies</a>
+      </div>
+
+      <!-- Auth required -->
+      <div class="fwl-empty" id="wh-auth" style="display:none">
+        <div class="fwl-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h2 class="fwl-empty__title">Sign In Required</h2>
+        <p class="fwl-empty__subtitle">Please sign in to view your watch history.</p>
+        <a href="login.html" class="fwl-browse-btn">Sign In</a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="nav-logo-mark">C</div>
+        <span class="nav-logo-text">CINE<span>VERSE</span></span>
+      </div>
+      <p class="footer-copy">© 2025 CineVerse. Your universe of cinema, curated.</p>
+    </div>
+  </footer>
+
+  <script src="js/cv-api.js"></script>
+  <script src="js/watch-history.js"></script>
+</body>
+</html>
