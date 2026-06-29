@@ -29,7 +29,7 @@
 
 * AI Review Summary ✅
 * Watchlist ✅
-* Watch History
+* Watch History ✅
 * User Profile ✅
 
 ---
@@ -43,10 +43,6 @@
 
 ## Version 5 🚀
 
-* RAG Chatbot
-* LangChain Integration
-* LangGraph Multi-Agent
-* AI Movie Assistant
 * AI Recommendations
 
 ---
@@ -54,13 +50,10 @@
 ## Version 6 🚀
 
 * Subscription Plans
-* Logs
 * Payment Gateway Integration (Stripe / Razorpay)
 * Premium Features(All AI feature except AI Review Summary)
-* Change Password
-* Redis Caching
-* Background Tasks
-* Logging
+* Change Password (with otp Redis)✅
+* Rate Limit using Redis✅
 * testing
 * CD Pipeline(Render) ✅
 * CI Pipeline(Render)

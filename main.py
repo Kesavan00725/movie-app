@@ -18,6 +18,9 @@ from movie_backend.routes.watchlist import router as watchlist
 from movie_backend.routes.profile import router as profile
 from movie_backend.routes.watch_history_router import router as watch_history_router 
 
+from movie_backend.models.user import User
+from movie_backend.models.genre import Genre
+from movie_backend.models.movie import Movie
 from movie_backend.models.movie_image import MovieImage
 from movie_backend.models.watchlist import Watchlist
 from movie_backend.models.profile import Profile
@@ -81,8 +84,6 @@ def scalar():
         title="Scalar API"
     )
 
-
-# ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth)
 app.include_router(movies)
 app.include_router(genres)

@@ -18,8 +18,7 @@ from movie_backend.services.watchlist_service import (
     remove_watchlist_service,
     get_watchlist_service
 )
-from typing import List
-
+from movie_backend.util.helpers import rate_limit
 router = APIRouter(
     prefix="/watchlist",
     tags=["Watchlist"]
