@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
-# ── Request ──────────────────────────────────────────────────────────────────
+
 
 class WatchHistoryRequest(BaseModel):
     movie_id: int = Field(..., gt=0, description="ID of the movie being watched")
@@ -11,7 +11,7 @@ class WatchHistoryRequest(BaseModel):
     completed: bool = Field(default=False, description="Whether the movie was fully watched")
 
 
-# ── Response ─────────────────────────────────────────────────────────────────
+
 
 class WatchHistoryResponse(BaseModel):
     id: int
@@ -24,7 +24,6 @@ class WatchHistoryResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Update (PATCH) ────────────────────────────────────────────────────────────
 
 class WatchHistoryUpdate(BaseModel):
     progress: Optional[int] = Field(None, ge=0, description="Updated progress in seconds")

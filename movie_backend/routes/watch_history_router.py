@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-# ── POST /watch-history/ ──────────────────────────────────────────────────────
+
 @router.post(
     "/",
     response_model=WatchHistoryResponse,
@@ -27,7 +27,7 @@ async def upsert_watch_history(
     return await watch_service.upsert_watch_history(db, current_user["id"], payload)
 
 
-# ── GET /watch-history/ ───────────────────────────────────────────────────────
+
 @router.get(
     "/",
     response_model=list[WatchHistoryResponse],
@@ -41,8 +41,7 @@ async def get_watch_history(
     return await watch_service.get_user_watch_history(db, current_user["id"])
 
 
-# ── GET /watch-history/continue-watching ─────────────────────────────────────
-# NOTE: must be declared BEFORE /{movie_id} to avoid route conflict
+
 @router.get(
     "/continue-watching",
     response_model=list[WatchHistoryResponse],
@@ -56,7 +55,6 @@ async def continue_watching(
     return await watch_service.get_continue_watching(db, current_user["id"])
 
 
-# ── GET /watch-history/{movie_id} ────────────────────────────────────────────
 @router.get(
     "/{movie_id}",
     response_model=WatchHistoryResponse,
@@ -71,7 +69,7 @@ async def get_movie_history(
     return await watch_service.get_movie_watch_history(db, current_user["id"], movie_id)
 
 
-# ── PATCH /watch-history/{movie_id}/complete ─────────────────────────────────
+
 @router.patch(
     "/{movie_id}/complete",
     response_model=WatchHistoryResponse,

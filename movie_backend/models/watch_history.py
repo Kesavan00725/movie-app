@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, UniqueConstraint
 from datetime import datetime
 from movie_backend.database.database import Base
+from sqlalchemy.orm import relationship
 
 
 class WatchHistory(Base):
@@ -13,6 +14,5 @@ class WatchHistory(Base):
     progress = Column(Integer, default=0, nullable=False)
     completed = Column(Boolean, default=False, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("user_id", "movie_id", name="uq_user_movie"),
-    )
+    user = relationship("User", back_populates="watch_history")
+    movie = relationship("Movie", back_populates="watch_history")

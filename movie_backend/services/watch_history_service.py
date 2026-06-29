@@ -13,7 +13,7 @@ def now():
     return datetime.utcnow()
 
 
-# ── Add or Update Watch History ───────────────────────────────────────────────
+
 
 async def upsert_watch_history(
     db: AsyncSession,
@@ -55,7 +55,7 @@ async def upsert_watch_history(
         )
 
 
-# ── Get All Watch History for a User ─────────────────────────────────────────
+
 
 async def get_user_watch_history(
     db: AsyncSession,
@@ -76,7 +76,7 @@ async def get_user_watch_history(
         )
 
 
-# ── Get Single Movie History ──────────────────────────────────────────────────
+
 
 async def get_movie_watch_history(
     db: AsyncSession,
@@ -109,7 +109,7 @@ async def get_movie_watch_history(
         )
 
 
-# ── Continue Watching ─────────────────────────────────────────────────────────
+
 
 async def get_continue_watching(
     db: AsyncSession,
@@ -134,7 +134,6 @@ async def get_continue_watching(
         )
 
 
-# ── Mark Movie as Completed ───────────────────────────────────────────────────
 
 async def mark_as_completed(
     db: AsyncSession,
