@@ -55,7 +55,9 @@ async def signup_service(
 
     await db.refresh(new_user)
 
-    send_welcome_email(new_user.username,new_user.email)
+    print("Before sending email...")
+    send_welcome_email(new_user.username, new_user.email)
+    print("After sending email...")
 
     return {
         "name": new_user.username,
