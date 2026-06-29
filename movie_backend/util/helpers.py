@@ -29,7 +29,7 @@ load_dotenv()
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_URL = os.getenv("REDIS_URL")
-print("REDIS_URL =", os.getenv("REDIS_URL"))
+
 
 redis_client = redis.from_url(
     REDIS_URL,
