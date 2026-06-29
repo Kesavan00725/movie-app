@@ -49,9 +49,6 @@
 
 ## Version 6 🚀
 
-* Subscription Plans
-* Payment Gateway Integration (Stripe / Razorpay)
-* Premium Features(All AI feature except AI Review Summary)
 * Change Password (with otp Redis)✅
 * Rate Limit using Redis✅
 * testing
