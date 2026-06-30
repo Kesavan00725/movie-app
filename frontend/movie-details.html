@@ -72,6 +72,7 @@
       
       <a href="watchlist.html"               class="nav-link">Watchlist</a>
       <a href="favorites.html"               class="nav-link">Favorites</a>
+       <a href="watch-history.html" class="nav-link" role="listitem" aria-current="page">History</a>
       <a href="ai_recommendations.html"               class="nav-link">AI Recommendations</a>
     </div>
     <div class="nav-actions">
@@ -146,6 +147,7 @@
     <a href="movie_page.html" class="nav-mobile-link">Movies</a>
     <a href="watchlist.html"   class="nav-mobile-link">Watchlist</a>
         <a href="favorites.html"   class="nav-mobile-link">Favorites</a>
+         <a href="watch-history.html" class="nav-mobile-link" role="listitem" aria-current="page">History</a>
         <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>
   </div>
 </nav>
@@ -558,5 +560,114 @@
 
 <script src="js/cv-api.js"></script>
 <script src="js/cv-details-patch.js"></script>
+<script>
+  /* ================================================================
+   CINEVERSE — movie-details-wh-patch.js
+   Add to movie-details.html AFTER cv-api.js and movie-details.js.
+
+   What this does:
+   • On page load — records the visit (progress=0) so history is created.
+   • Wires Play / Watch Now / Resume buttons → POST /watch-history/
+   • Updates progress every 30 s while the user is on the page
+     (simulates playback progress; swap in real player events if needed).
+================================================================ */
+
+'use strict';
+
+(function cvWatchHistoryPatch() {
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  /* ── Simulated playback state ── */
+  var _movieId        = null;
+  var _progressSecs   = 0;
+  var _progressTimer  = null;
+  var _trackingActive = false;
+
+  function boot() {
+    _movieId = new URLSearchParams(window.location.search).get('id');
+    if (!_movieId) return;
+    if (!cvLoggedIn()) return; /* not logged in — skip silently */
+
+    /* Record visit on page load (progress = 0 if no existing record) */
+    CV_WatchHistory.getMovieProgress(_movieId).then(function (existing) {
+      _progressSecs = existing ? (existing.progress || 0) : 0;
+      /* Only create if no existing record yet */
+      if (!existing) {
+        CV_WatchHistory.updateProgress(_movieId, 0, false);
+      }
+    }).catch(function () {});
+
+    /* Wire all play-type buttons */
+    wirePlayButtons();
+  }
+
+  /* ── Wire every button that starts playback ── */
+  function wirePlayButtons() {
+    var PLAY_IDS = [
+      'btn-play',         /* hero "Play" button */
+      'btn-watch-now',    /* hero "Watch Now" */
+      'btn-resume',       /* resume button if present */
+      'hero-play-btn',    /* alternate id pattern */
+      'watch-now-btn',
+      'resume-btn'
+    ];
+
+    PLAY_IDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', onPlayClick, { once: false });
+    });
+
+    /* Also wire any element with data-action="play" */
+    document.querySelectorAll('[data-action="play"],[data-action="watch"],[data-action="resume"]').forEach(function (el) {
+      el.addEventListener('click', onPlayClick, { once: false });
+    });
+  }
+
+  function onPlayClick() {
+    if (!_movieId || !cvLoggedIn()) return;
+
+    /* Record that playback started */
+    CV_WatchHistory.updateProgress(_movieId, _progressSecs, false).catch(function () {});
+
+    /* Start simulated progress tracking (increment 60 s per real 30 s) */
+    startProgressTracking();
+  }
+
+  /* ── Progress tracking ── */
+  function startProgressTracking() {
+    if (_trackingActive) return;
+    _trackingActive = true;
+
+    _progressTimer = setInterval(function () {
+      _progressSecs += 60; /* simulate 1 min of progress per 30 s real time */
+
+      /* Push update to backend */
+      CV_WatchHistory.updateProgress(_movieId, _progressSecs, false).catch(function () {});
+    }, 30000); /* every 30 seconds */
+
+    /* Stop tracking when user leaves page */
+    window.addEventListener('beforeunload', stopProgressTracking);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stopProgressTracking();
+      else if (_trackingActive) startProgressTracking();
+    });
+  }
+
+  function stopProgressTracking() {
+    if (_progressTimer) {
+      clearInterval(_progressTimer);
+      _progressTimer = null;
+    }
+    _trackingActive = false;
+  }
+
+})();
+</script>
 </body>
 </html>

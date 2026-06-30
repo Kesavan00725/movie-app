@@ -25,16 +25,16 @@
 
 ---
 
-## Version 3 🚧
+## Version 3 ✅
 
 * AI Review Summary ✅
 * Watchlist ✅
-* Watch History
+* Watch History ✅
 * User Profile ✅
 
 ---
 
-## Version 4 🚀
+## Version 4 ✅
 
 * Home API ✅
 * Recentely_Added Movies ✅
@@ -43,27 +43,18 @@
 
 ## Version 5 🚀
 
-* RAG Chatbot
-* LangChain Integration
-* LangGraph Multi-Agent
-* AI Movie Assistant
 * AI Recommendations
 
 ---
 
 ## Version 6 🚀
 
-* Subscription Plans
-* Logs
-* Payment Gateway Integration (Stripe / Razorpay)
-* Premium Features(All AI feature except AI Review Summary)
-* Change Password
+* Change Password (with otp Redis)✅
+* Rate Limit using Redis✅
 * Redis Caching
-* Background Tasks
-* Logging
 * testing
 * CD Pipeline(Render) ✅
-* CI Pipeline(Render)
+* CI (GitHub Actions)
 * AWS Deployment
 * CI/CD for AWS
 * Monitoring
