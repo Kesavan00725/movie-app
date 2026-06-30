@@ -24,6 +24,13 @@ from movie_backend.util.helpers import (
 )
 
 
+from movie_backend.ai.vectorstore.helpers import (
+    add_movie,
+    update_movie,
+    delete_movie
+
+)
+
 async def create_movie_service(
     request: MovieCreate,
     db: AsyncSession,
@@ -50,6 +57,7 @@ async def create_movie_service(
 
     result = await db.execute(statement)
     await db.refresh(movie)
+    add_movie(movie)
     return result.scalar_one()
 
 
@@ -93,7 +101,7 @@ async def update_movie_service(
 
     result = await db.execute(statement)
     await db.refresh(movie)
-
+    update_movie(movie)
     return result.scalar_one()
 
 
@@ -119,7 +127,7 @@ async def delete_movie_service(
         )
 
     await db.delete(movie)
-
+    delete_movie(movie.id)
     await db.commit()
 
     return {
