@@ -53,7 +53,7 @@
 
 * Change Password (with otp Redis)✅
 * Payment
-* Email Automation
+* Email Automation with Celery 
 * Rate Limit using Redis ✅
 * testing
 * CD Pipeline(Render) ✅
