@@ -27,31 +27,34 @@
 
 ## Version 3 ✅
 
-* AI Review Summary ✅
-* Watchlist ✅
-* Watch History ✅
-* User Profile ✅
+* AI Review Summary 
+* Watchlist 
+* Watch History 
+* User Profile 
 
 ---
 
 ## Version 4 ✅
 
-* Home API ✅
-* Recentely_Added Movies ✅
-* Top Rated Movies ✅
-* Latest Movies(year) ✅
+* Home API 
+* Recentely_Added Movies 
+* Top Rated Movies 
+* Latest Movies(year) 
 
 ## Version 5 🚀
 
 * AI Recommendations
+* Notification FCM
+* Redis Caching
 
 ---
 
 ## Version 6 🚀
 
 * Change Password (with otp Redis)✅
-* Rate Limit using Redis✅
-* Redis Caching
+* Payment
+* Email Automation
+* Rate Limit using Redis ✅
 * testing
 * CD Pipeline(Render) ✅
 * CI (GitHub Actions)
