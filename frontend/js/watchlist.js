@@ -1,15 +1,17 @@
 /* ================================================================
-   CINEVERSE — watchlist.js  v2.0
-   GET    /watchlist/         → [{id, movie:{id, title,...}}]
+   CINEVERSE — watchlist.js  v3.0  (FIXED to match real backend spec)
+   GET    /watchlist/            → [{id, user_id, movie_id}]
    POST   /watchlist/add/{id}
    DELETE /watchlist/{id}
 
-   NOTE: response uses movie.id (NOT movie_id like favorites)
+   NOTE: Watchlist now returns the SAME shape as Favorites —
+   {id, user_id, movie_id} — NOT a nested `movie` object.
+   We fetch each movie's full details from /movies/{movie_id}.
 ================================================================ */
 
 'use strict';
 
-const WL_BASE = ' https://cineverse-movie-app.onrender.com';
+const WL_BASE = 'https://cineverse-movie-app.onrender.com';
 const WL_PLACEHOLDER = 'assets/images/placeholder.jpg';
 
 function wlToken()    { return localStorage.getItem('access_token') || ''; }
@@ -22,6 +24,7 @@ function wlHeaders() {
 /* ── Boot ── */
 document.addEventListener('DOMContentLoaded', async () => {
   initNavbar();
+  initProfileDropdown();
 
   if (!wlLoggedIn()) {
     hideSkeleton();
@@ -44,9 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ================================================================
-   FETCH — GET /watchlist/ returns [{id, movie:{id, title,...}}]
-   The full movie object is ALREADY inside the response.
-   We use movie.id (NOT movie_id).
+   FETCH — GET /watchlist/ returns [{id, user_id, movie_id}]
+   Then fetch each movie by movie_id from /movies/{id}
+   (same pattern as favorites.js — the API shapes now match)
 ================================================================ */
 async function loadWatchlistMovies() {
   const res = await fetch(`${WL_BASE}/watchlist/`, { headers: wlHeaders() });
@@ -58,13 +61,23 @@ async function loadWatchlistMovies() {
   }
   if (!res.ok) throw new Error(`GET /watchlist/ → ${res.status}`);
 
-  const list = await res.json(); /* [{id, movie:{id,...}}] */
+  const list = await res.json(); /* [{id, user_id, movie_id}] */
 
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list) || list.length === 0) return [];
 
-  return list
-    .filter(item => item.movie && item.movie.id != null)
-    .map(item => normalizeMovie(item.movie)); /* use item.movie directly */
+  const results = await Promise.all(
+    list.map(async item => {
+      const movieId = item.movie_id;
+      if (!movieId) return null;
+      try {
+        const mRes = await fetch(`${WL_BASE}/movies/${movieId}`, { headers: wlHeaders() });
+        if (!mRes.ok) return null;
+        return normalizeMovie(await mRes.json());
+      } catch { return null; }
+    })
+  );
+
+  return results.filter(Boolean);
 }
 
 /* ── Normalize ── */
@@ -103,7 +116,7 @@ function renderGrid(movies) {
   grid.innerHTML = movies.map((m, i) => buildCard(m, i)).join('');
   showSection('wl-grid');
 
-  /* Wire remove-from-watchlist */
+  /* Wire remove-from-watchlist: DELETE /watchlist/{id} */
   grid.querySelectorAll('.cv-remove-wl').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -117,7 +130,7 @@ function renderGrid(movies) {
     });
   });
 
-  /* Wire add-to-favorites from this page */
+  /* Wire add-to-favorites from this page: POST/DELETE /favorites/{id} */
   grid.querySelectorAll('.cv-add-fav').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -127,11 +140,9 @@ function renderGrid(movies) {
       btn.style.opacity = '0.4';
       const active = btn.classList.contains('active');
       try {
-        const method = active ? 'DELETE' : 'POST';
-        const url    = active
-          ? `${WL_BASE}/favorites/delete/${id}`
-          : `${WL_BASE}/favorites/add/${id}`;
-        const res = await fetch(url, { method, headers: wlHeaders() });
+        const res = active
+          ? await fetch(`${WL_BASE}/favorites/${id}`, { method: 'DELETE', headers: wlHeaders() })
+          : await fetch(`${WL_BASE}/favorites/${id}`, { method: 'POST',   headers: wlHeaders() });
         if (res.ok) {
           btn.classList.toggle('active', !active);
           btn.innerHTML = heartSvg(!active);
@@ -245,7 +256,7 @@ function toast(msg, type = 'success') {
 
 function updateNavAvatar() {
   const name = localStorage.getItem('user_name') || '';
-  const el = document.getElementById('nav-avatar');
+  const el = document.getElementById('nav-avatar') || document.getElementById('profile-btn');
   if (el && name) el.textContent = name[0].toUpperCase();
 }
 
@@ -257,133 +268,48 @@ function initNavbar() {
   if (nb) window.addEventListener('scroll', () => nb.classList.toggle('scrolled', scrollY > 40), { passive: true });
 }
 
+/* ================================================================
+   PROFILE DROPDOWN — matches the markup already in watchlist.html
+   (#profile-btn / #profile-dropdown / #logout-btn).
+   Self-contained, runs once, no duplicate listeners.
+================================================================ */
+function initProfileDropdown() {
+  const profileBtn = document.getElementById('profile-btn');
+  const dropdown   = document.getElementById('profile-dropdown');
+  if (!profileBtn || !dropdown) return;
+
+  profileBtn.addEventListener('click', () => {
+    dropdown.classList.toggle('active');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.remove('active');
+    }
+  });
+
+  const username = localStorage.getItem('user_name')  || 'Guest';
+  const email    = localStorage.getItem('user_email') || '';
+  const initial  = username.charAt(0).toUpperCase();
+
+  const nameEl  = document.getElementById('dropdown-name');
+  const emailEl = document.getElementById('dropdown-email');
+  const avatarEl = document.getElementById('dropdown-avatar');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  if (nameEl)  nameEl.textContent  = username;
+  if (emailEl) emailEl.textContent = email;
+  if (avatarEl) avatarEl.textContent = initial;
+  profileBtn.textContent = initial;
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    });
+  }
+}
+
 function esc(v) {
   return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-const profileBtn =
-document.getElementById(
-'profile-btn'
-);
-
-
-const dropdown =
-document.getElementById(
-'profile-dropdown'
-);
-
-
-profileBtn.onclick=()=>{
-
-dropdown.classList.toggle(
-'active'
-);
-
-};
-
-
-
-document.addEventListener(
-
-'click',
-
-e=>{
-
-if(
-
-!profileBtn.contains(e.target)
-
-&&
-
-!dropdown.contains(e.target)
-
-){
-
-dropdown.classList.remove(
-
-'active'
-
-);
-
-}
-
-}
-
-);
-
-
-
-const username=
-
-localStorage.getItem(
-
-'user_name'
-
-)||'Guest';
-
-
-
-const email=
-
-localStorage.getItem(
-
-'user_email'
-
-)||'';
-
-
-
-document.getElementById(
-
-'dropdown-name'
-
-).textContent=username;
-
-
-
-document.getElementById(
-
-'dropdown-email'
-
-).textContent=email;
-
-
-
-const initial=
-
-username.charAt(
-
-0
-
-).toUpperCase();
-
-
-
-profileBtn.textContent=initial;
-
-
-
-document.getElementById(
-
-'dropdown-avatar'
-
-).textContent=initial;
-
-
-
-document.getElementById(
-
-'logout-btn'
-
-).onclick=()=>{
-
-
-localStorage.clear();
-
-
-
-window.location.href=
-
-'login.html';
-
-
-};

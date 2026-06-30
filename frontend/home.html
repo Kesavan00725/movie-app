@@ -782,6 +782,146 @@
     @media (max-width: 400px) {
       .mood-grid { grid-template-columns: 1fr 1fr; gap: var(--space-2); }
     }
+
+    /* ================================================================
+       FULL RESPONSIVE BREAKPOINT SYSTEM (HOME PAGE)
+       Desktop (1366px+) is the design reference and is left untouched.
+       Every rule below only narrows/adapts layout for smaller viewports.
+       ================================================================ */
+
+    /* Global safety net: never allow horizontal scroll on any device */
+    html, body { max-width: 100%; overflow-x: hidden; }
+    .hero, .hero-inner, .stats-inner, .trending-stage, .mood-grid,
+    .genre-grid, .promo-inner, .trending-detail-panel { max-width: 100%; }
+    img { max-width: 100%; height: auto; }
+    .hero-backdrop img, .mood-card-img, .movie-card-poster img,
+    .trending-card-poster img, .genre-card img, .featured-main img { height: 100%; }
+
+    /* ========= 1920px+  (Large Desktop) ========= */
+    @media (min-width: 1920px) {
+      /* Reference design already centers content with var(--max-w);
+         only stop hero art from over-stretching on ultra-wide canvases. */
+      .hero-title { font-size: clamp(4rem, 6vw, 7.5rem); }
+    }
+
+    /* ========= 1600px  (Desktop) ========= */
+    @media (max-width: 1600px) {
+      .trending-stage { width: 84%; }
+    }
+
+    /* ========= 1440px  (Laptop) ========= */
+    @media (max-width: 1440px) {
+      .trending-stage { width: 86%; }
+      #recommended-track .movie-card { width: 170px; }
+    }
+
+    /* ========= 1366px  (Small Laptop) ========= */
+    @media (max-width: 1366px) {
+      .nav-inner { gap: var(--space-8); }
+      .trending-stage { width: 88%; }
+    }
+
+    /* ========= 1200px  (already present above for mood-grid) ========= */
+    @media (max-width: 1200px) {
+      #recommended-track .movie-card { width: 160px; }
+      .featured-main-title { font-size: var(--text-4xl); }
+    }
+
+    /* ========= 1024px  (Tablet Landscape) ========= */
+    @media (max-width: 1024px) {
+      .hero-inner { padding: 0 var(--space-6); }
+      .stats-inner { gap: var(--space-4); }
+      .trending-card { width: 160px; }
+      .trending-detail-panel { padding: var(--space-6); }
+      .tdp-title { font-size: var(--text-3xl); }
+      .genre-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+
+    /* ========= 768px  (Tablet Portrait) ========= */
+    @media (max-width: 768px) {
+      .nav-inner { padding: 0 var(--space-5); gap: var(--space-5); }
+      .hero { min-height: 560px; }
+      .stat-number { font-size: var(--text-3xl); }
+      .stat-label { font-size: 10px; }
+      .promo-actions { flex-wrap: wrap; }
+      .promo-actions a { flex: 1 1 160px; justify-content: center; }
+      .tdp-title { font-size: var(--text-2xl); }
+      .tdp-desc { -webkit-line-clamp: 3; }
+      .trending-detail-panel { width: 92%; }
+      .featured-sidebar-card { min-width: 180px; }
+    }
+
+    /* ========= 576px  (Large Mobile) ========= */
+    @media (max-width: 576px) {
+      .nav-inner { gap: var(--space-3); }
+      .nav-logo-text { font-size: var(--text-lg); }
+      .nav-actions { gap: var(--space-2); }
+      .nav-search-btn { padding: var(--space-2) var(--space-3); }
+      .nav-icon-btn { width: 36px; height: 36px; }
+      .profile-dropdown {
+        width: min(260px, calc(100vw - 32px));
+        right: -8px;
+      }
+      .hero-eyebrow-meta { display: none; }
+      .hero-actions { flex-direction: column; align-items: stretch; width: 100%; }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-ghost { justify-content: center; width: 100%; }
+      .stats-strip { padding: var(--space-6) 0; }
+      .trending-detail-panel { width: 100%; padding: var(--space-5); }
+      .tdp-meta { gap: var(--space-3); }
+      .section-title { font-size: var(--text-2xl); }
+      .section-subtitle { display: none; }
+      .editorial-quote { font-size: 1.3rem; }
+    }
+
+    /* ========= 480px  (Medium Mobile) ========= */
+    @media (max-width: 480px) {
+      .hero-inner { padding: 0 var(--space-4); }
+      .hero-title { font-size: clamp(2.2rem, 11vw, 3.2rem); max-width: 100%; }
+      .hero-desc { font-size: var(--text-sm); margin-bottom: var(--space-6); }
+      .hero-meta { gap: var(--space-2); }
+      .hero-genre-tag { font-size: 10px; padding: 2px var(--space-2); }
+      .stats-inner { gap: var(--space-2); }
+      .stat-number { font-size: var(--text-2xl); }
+      .movie-card { width: 104px; }
+      .movie-card-wide { width: 190px; }
+      .trending-card { width: 130px; }
+      .mood-card-name { font-size: var(--text-xl); }
+      .mood-card-desc { display: none; }
+      .promo-title { font-size: var(--text-2xl); }
+      .featured-main-title { font-size: var(--text-2xl); }
+      .genre-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); padding: 0 var(--space-4); }
+    }
+
+    /* ========= 375px  (Small Mobile) ========= */
+    @media (max-width: 375px) {
+      .section-header { padding: 0 var(--space-4); }
+      .carousel-track { padding: var(--space-3) var(--space-4) var(--space-6); }
+      .movie-card { width: 96px; }
+      .movie-card-wide { width: 170px; }
+      .trending-card { width: 118px; }
+      .trending-card-rank { font-size: var(--text-3xl); }
+      .mood-grid { padding: var(--space-5) var(--space-4) 0; gap: var(--space-2); }
+      .promo-banner { padding: 0 var(--space-4); }
+      .stats-inner { padding: 0 var(--space-4); }
+    }
+
+    /* ========= 320px  (Very Small Devices) ========= */
+    @media (max-width: 320px) {
+      .nav-inner { padding: 0 var(--space-3); }
+      .nav-search-btn span:not(.nav-search-hint) { display: none; }
+      .nav-search-btn svg { margin: 0; }
+      .profile-dropdown { width: calc(100vw - 24px); right: -4px; }
+      .hero-title { font-size: clamp(2rem, 13vw, 2.6rem); }
+      .hero-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+      .stat-number { font-size: var(--text-xl); }
+      .movie-card { width: 88px; }
+      .trending-card { width: 108px; }
+      .mood-grid { grid-template-columns: 1fr 1fr; }
+      .tdp-title { font-size: var(--text-xl); }
+      .promo-title { font-size: var(--text-xl); }
+    }
   </style>
 </head>
 
@@ -904,7 +1044,7 @@
     </div>
     <nav class="nav-mobile-drawer" aria-label="Mobile navigation">
       <a href="home.html"       class="nav-mobile-link active">Home</a>
-      <a href="movies.html"      class="nav-mobile-link">Movies</a>
+      <a href="movie_page.html"      class="nav-mobile-link">Movies</a>
       <a href="watchlist.html"   class="nav-mobile-link">Watchlist</a>
       <a href="favorites.html"   class="nav-mobile-link">Favorites</a>
       <a href="ai_recommendations.html" class="nav-mobile-link">AI Recommendations</a>

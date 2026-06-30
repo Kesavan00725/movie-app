@@ -263,3 +263,89 @@
   .fwl-hero { padding: 100px 0 48px; }
   .fwl-grid { gap: 16px; }
 }
+
+/* ================================================================
+   FULL RESPONSIVE BREAKPOINT SYSTEM (FAVORITES PAGE)
+   Loaded last in the cascade so it can safely override navbar/card
+   defaults from earlier stylesheets without touching those files.
+   ================================================================ */
+
+html, body { max-width: 100%; overflow-x: hidden; }
+.fwl-main, .fwl-hero, .fwl-grid, .fwl-empty { max-width: 100%; }
+
+/* Profile dropdown overflow guard (shared navbar markup) */
+.profile-dropdown {
+  max-width: calc(100vw - 32px);
+}
+
+/* ========= 1920px+ (Large Desktop) ========= */
+@media (min-width: 1920px) {
+  .fwl-hero__title { font-size: clamp(3rem, 5vw, 6rem); }
+}
+
+/* ========= 1600px / 1440px / 1366px ========= */
+@media (max-width: 1600px) {
+  .fwl-main { max-width: 1300px; }
+}
+@media (max-width: 1440px) {
+  .fwl-main { max-width: 1200px; }
+}
+@media (max-width: 1366px) {
+  .fwl-main { padding: 44px 28px 72px; }
+}
+
+/* ========= 1024px (Tablet Landscape) ========= */
+@media (max-width: 1024px) {
+  .fwl-hero { padding: 110px 0 56px; }
+  .fwl-main { padding: 40px 24px 64px; }
+  .fwl-grid { gap: 20px; }
+}
+
+/* ========= 768px (Tablet Portrait) ========= */
+@media (max-width: 768px) {
+  .fwl-hero { padding: 96px 0 44px; }
+  .fwl-hero__icon { width: 60px; height: 60px; }
+  .fwl-hero__icon svg { width: 34px; height: 34px; }
+  .fwl-main { padding: 32px 20px 60px; }
+  .fwl-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+  .fwl-empty { padding: 64px 20px; }
+}
+
+/* ========= 576px (Large Mobile) ========= */
+@media (max-width: 576px) {
+  .fwl-hero { padding: 88px 0 40px; }
+  .fwl-hero__subtitle { font-size: 0.85rem; letter-spacing: 0.1em; }
+  .fwl-main { padding: 28px 16px 56px; }
+  .fwl-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
+  .fwl-empty__title { font-size: clamp(1.5rem, 6vw, 2.2rem); }
+  .fwl-empty__subtitle { font-size: 0.85rem; }
+  .fwl-browse-btn { width: 100%; justify-content: center; }
+  .profile-dropdown { width: min(260px, calc(100vw - 32px)); right: -8px; }
+}
+
+/* ========= 480px (Medium Mobile) ========= */
+@media (max-width: 480px) {
+  .fwl-hero { padding: 80px 0 36px; }
+  .fwl-hero__icon { width: 52px; height: 52px; margin-bottom: 4px; }
+  .fwl-hero__icon svg { width: 28px; height: 28px; }
+  .fwl-hero__count { font-size: 0.7rem; padding: 3px 12px; }
+  .fwl-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .fwl-empty { padding: 56px 16px; gap: 12px; }
+  .fwl-empty__icon { width: 80px; height: 80px; }
+}
+
+/* ========= 375px (Small Mobile) ========= */
+@media (max-width: 375px) {
+  .fwl-main { padding: 24px 12px 48px; }
+  .fwl-grid { gap: 10px; }
+  .fwl-hero__title { letter-spacing: 0.05em; }
+}
+
+/* ========= 320px (Very Small Devices) ========= */
+@media (max-width: 320px) {
+  .fwl-hero { padding: 72px 0 32px; }
+  .fwl-main { padding: 20px 10px 44px; }
+  .fwl-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .fwl-empty__subtitle { max-width: 28ch; }
+  .profile-dropdown { width: calc(100vw - 24px); right: -4px; }
+}

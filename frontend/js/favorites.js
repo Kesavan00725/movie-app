@@ -1,8 +1,8 @@
 /* ================================================================
-   CINEVERSE — favorites.js  v2.0
-   GET  /favorites/           → [{id, user_id, movie_id}]
-   POST /favorites/add/{id}
-   DELETE /favorites/delete/{id}
+   CINEVERSE — favorites.js  v3.0  (FIXED to match real backend spec)
+   GET    /favorites/        → [{id, user_id, movie_id}]
+   POST   /favorites/{id}
+   DELETE /favorites/{id}
 ================================================================ */
 
 'use strict';
@@ -20,6 +20,7 @@ function favHeaders() {
 /* ── Boot ── */
 document.addEventListener('DOMContentLoaded', async () => {
   initNavbar();
+  initProfileDropdown();
 
   if (!favLoggedIn()) {
     hideSkeleton();
@@ -135,11 +136,9 @@ function renderGrid(movies) {
       btn.style.opacity = '0.4';
       const active = btn.classList.contains('active');
       try {
-        const method = active ? 'DELETE' : 'POST';
-        const url    = active
-          ? `${FAV_BASE}/watchlist/${id}`
-          : `${FAV_BASE}/watchlist/add/${id}`;
-        const res = await fetch(url, { method, headers: favHeaders() });
+        const res = active
+          ? await fetch(`${FAV_BASE}/watchlist/${id}`,     { method: 'DELETE', headers: favHeaders() })
+          : await fetch(`${FAV_BASE}/watchlist/add/${id}`, { method: 'POST',   headers: favHeaders() });
         if (res.ok) {
           btn.classList.toggle('active', !active);
           btn.innerHTML = bookmarkSvg(!active);
@@ -154,10 +153,10 @@ function renderGrid(movies) {
   });
 }
 
-/* ── Remove from favorites ── */
+/* ── Remove from favorites: DELETE /favorites/{movie_id} ── */
 async function removeFavorite(movieId, cardEl) {
   try {
-    const res = await fetch(`${FAV_BASE}/favorites/delete/${movieId}`, {
+    const res = await fetch(`${FAV_BASE}/favorites/${movieId}`, {
       method: 'DELETE',
       headers: favHeaders()
     });
@@ -253,7 +252,7 @@ function toast(msg, type = 'success') {
 
 function updateNavAvatar() {
   const name = localStorage.getItem('user_name') || '';
-  const el = document.getElementById('nav-avatar');
+  const el = document.getElementById('nav-avatar') || document.getElementById('profile-btn');
   if (el && name) el.textContent = name[0].toUpperCase();
 }
 
@@ -265,133 +264,48 @@ function initNavbar() {
   if (nb) window.addEventListener('scroll', () => nb.classList.toggle('scrolled', scrollY > 40), { passive: true });
 }
 
+/* ================================================================
+   PROFILE DROPDOWN — matches the markup already in favorites.html
+   (#profile-btn / #profile-dropdown / #logout-btn).
+   Self-contained, runs once, no duplicate listeners.
+================================================================ */
+function initProfileDropdown() {
+  const profileBtn = document.getElementById('profile-btn');
+  const dropdown   = document.getElementById('profile-dropdown');
+  if (!profileBtn || !dropdown) return;
+
+  profileBtn.addEventListener('click', () => {
+    dropdown.classList.toggle('active');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.remove('active');
+    }
+  });
+
+  const username = localStorage.getItem('user_name')  || 'Guest';
+  const email    = localStorage.getItem('user_email') || '';
+  const initial  = username.charAt(0).toUpperCase();
+
+  const nameEl  = document.getElementById('dropdown-name');
+  const emailEl = document.getElementById('dropdown-email');
+  const avatarEl = document.getElementById('dropdown-avatar');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  if (nameEl)  nameEl.textContent  = username;
+  if (emailEl) emailEl.textContent = email;
+  if (avatarEl) avatarEl.textContent = initial;
+  profileBtn.textContent = initial;
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    });
+  }
+}
+
 function esc(v) {
   return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-const profileBtn =
-document.getElementById(
-'profile-btn'
-);
-
-
-const dropdown =
-document.getElementById(
-'profile-dropdown'
-);
-
-
-profileBtn.onclick=()=>{
-
-dropdown.classList.toggle(
-'active'
-);
-
-};
-
-
-
-document.addEventListener(
-
-'click',
-
-e=>{
-
-if(
-
-!profileBtn.contains(e.target)
-
-&&
-
-!dropdown.contains(e.target)
-
-){
-
-dropdown.classList.remove(
-
-'active'
-
-);
-
-}
-
-}
-
-);
-
-
-
-const username=
-
-localStorage.getItem(
-
-'user_name'
-
-)||'Guest';
-
-
-
-const email=
-
-localStorage.getItem(
-
-'user_email'
-
-)||'';
-
-
-
-document.getElementById(
-
-'dropdown-name'
-
-).textContent=username;
-
-
-
-document.getElementById(
-
-'dropdown-email'
-
-).textContent=email;
-
-
-
-const initial=
-
-username.charAt(
-
-0
-
-).toUpperCase();
-
-
-
-profileBtn.textContent=initial;
-
-
-
-document.getElementById(
-
-'dropdown-avatar'
-
-).textContent=initial;
-
-
-
-document.getElementById(
-
-'logout-btn'
-
-).onclick=()=>{
-
-
-localStorage.clear();
-
-
-
-window.location.href=
-
-'login.html';
-
-
-};
