@@ -17,6 +17,7 @@ from movie_backend.routes.review import router as review
 from movie_backend.routes.watchlist import router as watchlist
 from movie_backend.routes.profile import router as profile
 from movie_backend.routes.watch_history_router import router as watch_history
+from movie_backend.routes.ai_recommendation import router as ai_recommendation
 
 from movie_backend.models.user import User
 from movie_backend.models.genre import Genre
@@ -25,6 +26,7 @@ from movie_backend.models.movie_image import MovieImage
 from movie_backend.models.watchlist import Watchlist
 from movie_backend.models.profile import Profile
 from movie_backend.models.watch_history import WatchHistory
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -93,3 +95,4 @@ app.include_router(review)
 app.include_router(watchlist)
 app.include_router(profile)
 app.include_router(watch_history)
+app.include_router(ai_recommendation)

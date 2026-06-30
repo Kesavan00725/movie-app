@@ -6,7 +6,7 @@ from fastapi import (
     status
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from movie_backend.models.user import User
+# from movie_backend.models.user import User
 from sqlalchemy import select
 
 import redis.asyncio as redis
@@ -242,3 +242,4 @@ def rate_limit(max_requests: int, window: int):
         await redis_client.incr(key)
 
     return dependency
+
