@@ -1,25 +1,24 @@
 from langchain_core.tools import tool
-from rag import vector_store
+
+from movie_backend.ai.vectorstore.store import vector_store
+
+retriever = vector_store.as_retriever(
+    search_kwargs={"k": 5}
+)
+
 
 @tool
 def rag(query: str):
     """
-    Return top 5 Movies
+    Returns the top 5 most relevant movies from the vector database.
 
-    Searches the movie knowledge base using semantic search.
-
-    Use this tool when you need movie information such as
-    themes, mood, atmosphere, similar movies,
-    audience suitability and semantic recommendations.
+    Use this tool whenever movie knowledge, themes, genres,
+    descriptions, atmosphere or semantic similarity is required.
     """
-    retrival = vector_store.as_retriever(search_kwargs={"k": 5})
 
-    docs = retrival.invoke(
-        query
+    docs = retriever.invoke(query)
+
+    return "\n\n".join(
+        doc.page_content
+        for doc in docs
     )
-
-    content = ""
-    for doc in docs:
-        content = content + " " + doc.page_content
-
-    return content

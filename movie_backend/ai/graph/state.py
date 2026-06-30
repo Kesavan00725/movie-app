@@ -4,5 +4,4 @@ from langchain_core.messages import BaseMessage
 
 
 class AgentState(TypedDict):
-    user_id: int
     messages: Annotated[list[BaseMessage], add_messages]
