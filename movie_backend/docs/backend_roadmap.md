@@ -41,23 +41,20 @@
 * Top Rated Movies 
 * Latest Movies(year) 
 
-## Version 5 🚀
+## Version 5  ✅
 
-* AI Recommendations
-* Notification FCM
-* Redis Caching
+* AI Recommendations(Run Locally)
 
 ---
 
 ## Version 6 🚀
 
 * Change Password (with otp Redis)✅
-* Payment
-* Email Automation with Celery 
+* Email Automation ✅ (RunLocally)
+* Notification FCM
+* Redis Caching
 * Rate Limit using Redis ✅
 * testing
 * CD Pipeline(Render) ✅
 * CI (GitHub Actions)
-* AWS Deployment
-* CI/CD for AWS
-* Monitoring
+* Monitoring ✅
