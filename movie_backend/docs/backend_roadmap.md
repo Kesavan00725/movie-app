@@ -47,14 +47,10 @@
 
 ---
 
-## Version 6 🚀
+## Version 6 ✅
 
-* Change Password (with otp Redis)✅
-* Email Automation ✅ (RunLocally)
-* Notification FCM
-* Redis Caching
-* Rate Limit using Redis ✅
-* testing
-* CD Pipeline(Render) ✅
-* CI (GitHub Actions)
-* Monitoring ✅
+* Change Password (with otp Redis)
+* Email Automation (RunLocally)
+* Rate Limit using Redis 
+* CD Pipeline(Render) 
+* Monitoring 
